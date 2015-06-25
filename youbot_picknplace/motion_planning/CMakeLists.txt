@@ -6,13 +6,12 @@ project(motion_planning)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
+  pluginlib
   roscpp
   motion_msgs
   motion_planning_msgs
+  moveit_core moveit_ros_planning moveit_ros_planning_interface
 )
-
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -82,7 +81,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion_planning
-#  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs
+  CATKIN_DEPENDS actionlib roscpp moveit_core moveit_ros_planning moveit_ros_planning_interface
 #  DEPENDS system_lib
 )
 
@@ -95,10 +94,14 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -O2")
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+
+## System dependencies are found with CMake's conventions
+find_package(Eigen REQUIRED)
+
+include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
+                    include)
+
+include_directories(SYSTEM ${Eigen_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(motion_planning
@@ -107,14 +110,13 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(motion_planning
-# src/motion_planning.cpp
- src/plan_motion_server.cpp
- src/plan_motion_server.cpp
+ src/motion_planning.cpp
+ src/motion_planner.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(motion_planning motion_msgs)
+add_dependencies(motion_planning motion_msgs motion_planning_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planning

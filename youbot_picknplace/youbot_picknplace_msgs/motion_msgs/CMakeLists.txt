@@ -6,6 +6,7 @@ project(motion_msgs)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
+  geometry_msgs
   message_generation
 )
 
@@ -64,6 +65,7 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   actionlib_msgs
+  geometry_msgs
 )
 
 ###################################

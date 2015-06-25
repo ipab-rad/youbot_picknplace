@@ -6,7 +6,7 @@
    -->
 
   <!-- start obj recognition -->
-  <node pkg="youbot_picknplace" type="object_listener" name="object_listener" output="screen"/>
+  <node pkg="sensing" type="sensing" name="object_listener" output="screen"/>
 
 
   <!-- start obj listener -->

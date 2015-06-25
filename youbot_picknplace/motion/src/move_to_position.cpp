@@ -1,4 +1,6 @@
-#include "youbot_picknplace/move_to_position.hpp"
+#include "motion/move_to_position.hpp"
+#include "motion_msgs/MoveToPositionAction.h"
+
 
 MoveToPositionAction::MoveToPositionAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
@@ -13,8 +15,8 @@ MoveToPositionAction::MoveToPositionAction(ros::NodeHandle nh, std::string name)
   joint_pos_sub_ = nh_.subscribe("/joint_states", 1,
                                 &MoveToPositionAction::positionCB, this);
   // and service client for planning motion
-  planning_client_ = nh_.serviceClient<youbot_picknplace::PlanMotion>(
-                          "plan_motion", true);
+  planning_client_ = nh_.serviceClient<motion_planning_msgs::PlanMotion>(
+                          "/motion_planning/plan_motion", true);
   planning_client_.waitForExistence();
 
   this->init();
@@ -72,7 +74,7 @@ void MoveToPositionAction::executeCB() {
 
     // calling service
     if (planning_client_.call(planning_srv_)) {
-      ROS_INFO("Reached planning service", action_name_.c_str());
+      ROS_INFO("Reached planning service %s", action_name_.c_str());
       success = true;
       going = false;
     }
@@ -89,14 +91,4 @@ void MoveToPositionAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
-}
-
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "move_to_position");
-  ros::NodeHandle nh;
-  MoveToPositionAction MoveToPositionAction(nh, ros::this_node::getName());
-  ros::spin();
-
-  return 0;
 }

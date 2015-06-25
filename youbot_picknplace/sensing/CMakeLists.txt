@@ -7,6 +7,7 @@ project(sensing)
 find_package(catkin REQUIRED COMPONENTS
  roscpp
  sensing_msgs
+ tf
  )
 
 find_package(Boost REQUIRED)
@@ -61,7 +62,7 @@ find_package(Boost REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES sensing
-#  CATKIN_DEPENDS roscpp std_msgs message_runtime
+  CATKIN_DEPENDS roscpp std_msgs tf
 #  DEPENDS system_lib
 )
 
@@ -133,6 +134,8 @@ target_link_libraries(sensing
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 #############
 ## Testing ##

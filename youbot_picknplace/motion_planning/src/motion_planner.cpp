@@ -1,9 +1,6 @@
-#include "ros/ros.h"
-#include "youbot_picknplace/PlanMotion.h"
-#include <pluginlib/class_loader.h>
+#include "motion_planning/motion_planner.hpp"
 
- //tf
- #include <tf/transform_datatypes.h>
+
 
 // moveit interfaces
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -12,12 +9,30 @@
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit_msgs/PlanningScene.h>
 
-bool planMotion(youbot_picknplace::PlanMotion::Request  &req,
-         youbot_picknplace::PlanMotion::Response &res)
+
+MotionPlanner::MotionPlanner(ros::NodeHandle* nh) {
+  nh_ = nh;
+  ROS_INFO_STREAM("Setting up plan_motion services");
+  srv_plan_motion_ = nh_->advertiseService("plan_motion",
+                                            &MotionPlanner::planMotion, this);
+  // this->init(nh);
+}
+
+
+MotionPlanner::~MotionPlanner() {
+}
+
+// MotionPlanner::init(ros::NodeHandle* nh) {
+//   // load robot descrpition from ros param server
+//   robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
+//   robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
+//   // load planning scene
+//   planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
+// }
+
+bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
+         motion_planning_msgs::PlanMotion::Response &res)
 {
-
-  ros::NodeHandle node_handle;
-
   // load robot descrpition from ros param server
   robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
   robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
@@ -41,7 +56,7 @@ bool planMotion(youbot_picknplace::PlanMotion::Request  &req,
   try
   {
     planner_instance.reset(planner_plugin_loader->createUnmanagedInstance(planner_plugin_name));
-    if (!planner_instance->initialize(robot_model, node_handle.getNamespace()))
+    if (!planner_instance->initialize(robot_model, nh_->getNamespace()))
       ROS_FATAL_STREAM("Could not initialize planner instance");
     ROS_INFO_STREAM("Using planning interface '" << planner_instance->getDescription() << "'");
   }
@@ -110,16 +125,4 @@ bool planMotion(youbot_picknplace::PlanMotion::Request  &req,
   ROS_INFO("request: x=%f, y=%f, z=%f", (double)req.x, (double)req.y, (double)req.z);
   ROS_INFO("sending back response: [%f]", (double) res.success);
   return true;
-}
-
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "plan_motion_server");
-  ros::NodeHandle n;
-
-  ros::ServiceServer service = n.advertiseService("plan_motion", planMotion);
-  ROS_INFO("Ready to plan motion.");
-  ros::spin();
-
-  return 0;
 }

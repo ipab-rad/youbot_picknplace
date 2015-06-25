@@ -5,12 +5,10 @@ project(motion)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+ actionlib
  roscpp
- motion_msgs)
-
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
+ motion_msgs
+ motion_planning_msgs)
 
 #######################################
 ## Declare ROS messages and services ##
@@ -53,7 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion
-#  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS actionlib roscpp
 #  DEPENDS system_lib
 )
 
@@ -65,10 +63,14 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -O2")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+
+## System dependencies are found with CMake's conventions
+find_package(Eigen REQUIRED)
+
+include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
+                    include)
+
+include_directories(SYSTEM ${Eigen_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(motion
@@ -77,26 +79,16 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(motion
-#  src/motion.cpp
+  src/motion.cpp
   src/move_to_position.cpp
-)
-
-add_executable(motion_client
-  src/move_to_position_client.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(motion motion_msgs)
-add_dependencies(motion_client motion_msgs)
+add_dependencies(motion motion_msgs motion_planning_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion
-  ${catkin_LIBRARIES}
-)
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(motion_client
   ${catkin_LIBRARIES}
 )
 
