@@ -1,11 +1,3 @@
-/**
- * @file      monitor.hpp
- * @brief     Monitor class, leds and audio are used for external debugging
- * @author    Alejandro Bordallo <alex.bordallo@ed.ac.uk>
- * @date      2015-06-17
- * @copyright (MIT) 2015 Edinferno
- */
-
 #ifndef MOTION_PLANNER_HPP
 #define MOTION_PLANNER_HPP
 
@@ -23,11 +15,19 @@
 // Messages
 #include "motion_planning_msgs/PlanMotion.h"
 
+// move it libs
+#include <moveit/planning_interface/planning_interface.h>
+#include <moveit/planning_scene/planning_scene.h>
+
 
 class MotionPlanner {
  public:
   explicit MotionPlanner(ros::NodeHandle* nh);
   ~MotionPlanner();
+
+  planning_interface::PlannerManagerPtr getPlannerInstance();
+  void setRobotModel();
+  planning_scene::PlanningScenePtr getPlanningScene();
 
   bool planMotion(motion_planning_msgs::PlanMotion::Request& req,
                       motion_planning_msgs::PlanMotion::Response& res);
@@ -36,6 +36,17 @@ class MotionPlanner {
   // ROS
   ros::NodeHandle* nh_;
   ros::ServiceServer srv_plan_motion_;
+
+  // robot
+  robot_model::RobotModelPtr robot_model;
+
+
+  // message fields
+  geometry_msgs::PoseStamped pose;
+  geometry_msgs::Quaternion quat;
+  planning_interface::MotionPlanRequest request;
+  planning_interface::MotionPlanResponse response;
+
 };
 
-#endif /* MOTION_PLANNER_HPP */
+#endif /* MOTION_PLANNER_HPP  */
