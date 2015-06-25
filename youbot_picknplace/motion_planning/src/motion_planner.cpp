@@ -14,17 +14,18 @@ MotionPlanner::MotionPlanner(ros::NodeHandle* nh) {
                                             &MotionPlanner::planMotion, this);
 }
 
-
 MotionPlanner::~MotionPlanner() {
 }
 
-void MotionPlanner::setRobotModel(){
-  // load robot descrpition from ros param server
-  robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-  robot_model = robot_model_loader.getModel();
-}
+bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
+         motion_planning_msgs::PlanMotion::Response &res)
+{
 
-planning_interface::PlannerManagerPtr MotionPlanner::getPlannerInstance() {
+  // creating robot loader for robot model
+  robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
+  robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
+  // planning scene
+  planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
 
   std::string planner_plugin_name = "ompl_interface/OMPLPlanner";
   boost::scoped_ptr<pluginlib::ClassLoader<planning_interface::PlannerManager> > planner_plugin_loader;
@@ -57,28 +58,10 @@ planning_interface::PlannerManagerPtr MotionPlanner::getPlannerInstance() {
                      << "Available plugins: " << ss.str());
   }
 
-  return planner_instance;
-}
-
-planning_scene::PlanningScenePtr MotionPlanner::getPlanningScene() {
-  // load planning scene
-  planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
-  return planning_scene;
-}
-
-bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
-         motion_planning_msgs::PlanMotion::Response &res)
-{
-
-  this->setRobotModel();
-  planning_scene::PlanningScenePtr planning_scene = this->getPlanningScene();
-  planning_interface::PlannerManagerPtr planner_instance = this->getPlannerInstance();
-
-
-  // Pose Goal
-  // ^^^^^^^^^
-  // We will now create a motion plan request for the youbot arm
+  // create a motion plan request for youbot arm
   // specifying the desired pose of the end-effector as input.
+  planning_interface::MotionPlanRequest request;
+  planning_interface::MotionPlanResponse response;
   pose.header.frame_id = "base_footprint";
   quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129,0.0549,1.686);
   pose.pose.orientation.x = quat.x;
@@ -97,12 +80,10 @@ bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
 
   request.group_name = "arm_1";
   moveit_msgs::Constraints pose_goal = kinematic_constraints::constructGoalConstraints("arm_link_5", pose, tolerance_pose, tolerance_angle);
-  request.goal_constraints.clear();
   request.goal_constraints.push_back(pose_goal);
 
-  // We now construct a planning context that encapsulate the scene,
-  // the request and the response. We call the planner using this 
-  // planning context
+  // Use planning context that encapsulate the scene,
+  // the request and the response
   planning_interface::PlanningContextPtr context = planner_instance->getPlanningContext(planning_scene, request, response.error_code_);
   context->solve(response);
   if(response.error_code_.val != response.error_code_.SUCCESS)
@@ -115,6 +96,8 @@ bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
     res.success = 1;
   }
 
+  // for information purposes for now
+  // INFO START
   moveit_msgs::MotionPlanResponse configuration_response;
   response.getMessage(configuration_response);
   std::vector<double> joint_values = configuration_response.trajectory.joint_trajectory.points.back().positions;
@@ -126,5 +109,7 @@ bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
 
   ROS_INFO("request: x=%f, y=%f, z=%f", (double)req.x, (double)req.y, (double)req.z);
   ROS_INFO("sending back response: [%f]", (double) res.success);
+  // INFO END
+
   return true;
 }
