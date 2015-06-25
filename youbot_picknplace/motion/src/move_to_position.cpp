@@ -77,6 +77,10 @@ void MoveToPositionAction::executeCB() {
       ROS_INFO("Reached planning service %s", action_name_.c_str());
       success = true;
       going = false;
+    }else{
+      ROS_INFO("Planning service %s was not reached", action_name_.c_str());
+      success = false;
+      going = false;
     }
     ros::spinOnce();
     r.sleep();
