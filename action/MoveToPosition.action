@@ -1,0 +1,10 @@
+#goal definition
+geometry_msgs/Point position
+---
+#result definition
+bool success
+---
+#feedback
+float64 x
+float64 y
+float64 z

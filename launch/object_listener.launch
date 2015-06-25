@@ -1,0 +1,16 @@
+<launch>
+
+  <!-- start xtion -->
+  <!-- 
+  <include file="$(find rad_youbot_stack)/launch/bringup_picknplace_gazebo.launch">  </include>
+   -->
+
+  <!-- start obj recognition -->
+  <node pkg="youbot_picknplace" type="object_listener" name="object_listener" output="screen"/>
+
+
+  <!-- start obj listener -->
+  <node pkg="object_recognition_core" type="detection" name="object_detector" 
+  	args="-c $(find object_recognition_tabletop)/conf/detection.object.ros.ork"/>
+
+</launch>
