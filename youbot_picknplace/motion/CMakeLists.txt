@@ -83,12 +83,21 @@ add_executable(motion
   src/move_to_position.cpp
 )
 
+add_executable(motion_client
+  src/move_to_position_client.cpp
+)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion motion_msgs motion_planning_msgs)
+add_dependencies(motion_client motion_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(motion_client
   ${catkin_LIBRARIES}
 )
 
