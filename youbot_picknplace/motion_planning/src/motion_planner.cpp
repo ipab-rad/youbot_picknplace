@@ -86,14 +86,16 @@ bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
   // the request and the response
   planning_interface::PlanningContextPtr context = planner_instance->getPlanningContext(planning_scene, request, response.error_code_);
   context->solve(response);
+  ROS_INFO("request: x=%f, y=%f, z=%f", (double)req.x, (double)req.y, (double)req.z);
+
   if(response.error_code_.val != response.error_code_.SUCCESS)
   {
     ROS_ERROR("Could not compute plan successfully");
-    res.success = 0;
+    res.success = false;
     return true;
   }else{
     ROS_INFO("Planned computed successfully");
-    res.success = 1;
+    res.success = true;
   }
 
   // for information purposes for now
@@ -107,8 +109,7 @@ bool MotionPlanner::planMotion(motion_planning_msgs::PlanMotion::Request  &req,
     ROS_INFO("Joint %lu: %f", i, joint_values[i]);
   }
 
-  ROS_INFO("request: x=%f, y=%f, z=%f", (double)req.x, (double)req.y, (double)req.z);
-  ROS_INFO("sending back response: [%f]", (double) res.success);
+  ROS_INFO("sending back response: %d", res.success);
   // INFO END
 
   return true;

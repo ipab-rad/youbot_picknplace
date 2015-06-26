@@ -58,6 +58,36 @@ void MoveToPositionAction::executeCB() {
   bool success = false;
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
+  feedback_.curr_state = 0;
+  as_.publishFeedback(feedback_);
+
+
+  // Do a planning request
+  planning_srv_.request.x = target_position_.x;
+  planning_srv_.request.y = target_position_.y;
+  planning_srv_.request.z = target_position_.z;
+    
+
+  // calling service
+  if (planning_client_.call(planning_srv_)) {
+    ROS_INFO("Reached planning service %s", action_name_.c_str());
+    if(planning_srv_.response.success){
+      // Publish Feedback
+      feedback_.curr_state = 1;
+      as_.publishFeedback(feedback_);
+      // TODO: 2 lines below are temp
+      going = false;
+      success = true;
+    }else{
+      success = false;
+      going = false;
+    }
+  }else{
+    ROS_INFO("Planning service %s was not reached", action_name_.c_str());
+    success = false;
+    as_.setPreempted();
+    going = false;
+  }
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -66,26 +96,16 @@ void MoveToPositionAction::executeCB() {
       going = false;
     }
 
-    // Set planning request
-    planning_srv_.request.x = target_position_.x;
-    planning_srv_.request.x = target_position_.y;
-    planning_srv_.request.x = target_position_.z;
-    
+    // TODO
+    // perform motion of the arm
 
-    // calling service
-    if (planning_client_.call(planning_srv_)) {
-      ROS_INFO("Reached planning service %s", action_name_.c_str());
-      success = true;
-      going = false;
-    }else{
-      ROS_INFO("Planning service %s was not reached", action_name_.c_str());
-      success = false;
-      going = false;
-    }
     ros::spinOnce();
     r.sleep();
   }
- 
+
+  feedback_.curr_state = 3;
+  as_.publishFeedback(feedback_);
+
   if (success) {
     result_.success = true;
     ROS_INFO("%s: Succeeded!", action_name_.c_str());

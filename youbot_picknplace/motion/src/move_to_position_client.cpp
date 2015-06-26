@@ -18,22 +18,14 @@ int main (int argc, char **argv)
   ROS_INFO("Action server started, sending goal.");
   // send a goal to the action
   motion_msgs::MoveToPositionGoal goal;
-  goal.position.x = 20;
-  goal.position.y = 20;
-  goal.position.z = 20;
+  goal.position.x = 0.12;
+  goal.position.y = -0.15;
+  goal.position.z = 0.21;
 
   ac.sendGoal(goal);
 
-  //wait for the action to return
-  bool finished_before_timeout = ac.waitForResult(ros::Duration(30.0));
-
-  if (finished_before_timeout)
-  {
-    actionlib::SimpleClientGoalState state = ac.getState();
-    ROS_INFO("Action finished: %s",state.toString().c_str());
-  }
-  else
-    ROS_INFO("Action did not finish before the time out.");
+  actionlib::SimpleClientGoalState state = ac.getState();
+  ROS_INFO("Action state: %s",state.toString().c_str());
 
   //exit
   return 0;

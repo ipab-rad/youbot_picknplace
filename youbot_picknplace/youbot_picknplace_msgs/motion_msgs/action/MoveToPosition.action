@@ -5,6 +5,8 @@ geometry_msgs/Point position
 bool success
 ---
 #feedback
-float64 x
-float64 y
-float64 z
+# INITIAL=0
+# PLANNED=1
+# EXECUTING=2
+# FINISHED=3
+uint8 curr_state
