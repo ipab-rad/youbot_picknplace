@@ -24,9 +24,6 @@ int main (int argc, char **argv)
 
   ac.sendGoal(goal);
 
-  actionlib::SimpleClientGoalState state = ac.getState();
-  ROS_INFO("Action state: %s",state.toString().c_str());
-
   //exit
   return 0;
 }
