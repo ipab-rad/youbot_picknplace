@@ -16,7 +16,4 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
         <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen">
         </node>
 
-        <node name="motion_client" pkg="motion" type="motion_client" output="screen">
-        </node>
-       
 </launch>
