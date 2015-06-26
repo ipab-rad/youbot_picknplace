@@ -8,7 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
  actionlib
  roscpp
  motion_msgs
- motion_planning_msgs)
+ motion_planning_msgs
+ moveit_core moveit_ros_planning moveit_ros_planning_interface
+ )
 
 #######################################
 ## Declare ROS messages and services ##
@@ -51,7 +53,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion
-  CATKIN_DEPENDS actionlib roscpp
+  CATKIN_DEPENDS actionlib roscpp moveit_core moveit_ros_planning moveit_ros_planning_interface
 #  DEPENDS system_lib
 )
 

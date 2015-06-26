@@ -1,6 +1,11 @@
 #include "motion/move_to_position.hpp"
 #include "motion_msgs/MoveToPositionAction.h"
 
+#include <moveit/move_group_interface/move_group.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+
+ //tf
+#include <tf/transform_datatypes.h>
 
 MoveToPositionAction::MoveToPositionAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
@@ -61,32 +66,56 @@ void MoveToPositionAction::executeCB() {
   feedback_.curr_state = 0;
   as_.publishFeedback(feedback_);
 
-
   // Do a planning request
   planning_srv_.request.x = target_position_.x;
   planning_srv_.request.y = target_position_.y;
   planning_srv_.request.z = target_position_.z;
-    
+  
 
   // calling service
   if (planning_client_.call(planning_srv_)) {
     ROS_INFO("Reached planning service %s", action_name_.c_str());
     if(planning_srv_.response.success){
+      ROS_INFO("Planning was successful");
       // Publish Feedback
       feedback_.curr_state = 1;
       as_.publishFeedback(feedback_);
-      // TODO: 2 lines below are temp
-      going = false;
-      success = true;
     }else{
+      ROS_INFO("Planning was NOT successful");
       success = false;
       going = false;
     }
-  }else{
+   }else{
     ROS_INFO("Planning service %s was not reached", action_name_.c_str());
-    success = false;
+     success = false;
     as_.setPreempted();
-    going = false;
+     going = false;
+   }
+
+  if (going){
+    feedback_.curr_state = 2;
+    as_.publishFeedback(feedback_);
+    // get move it to execute motion
+    moveit::planning_interface::MoveGroup group("arm_1");
+    geometry_msgs::PoseStamped target_pose;
+    target_pose.header.frame_id = "base_footprint";
+    geometry_msgs::Quaternion quat ;
+    quat = tf::createQuaternionMsgFromRollPitchYaw(3.1174,-0.1087,-1.6135);
+    target_pose.pose.orientation.x = quat.x;
+    target_pose.pose.orientation.y = quat.y;
+    target_pose.pose.orientation.z = quat.z;
+    target_pose.pose.orientation.w = quat.w;
+    ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
+    target_pose.pose.position.x = target_position_.x;
+    target_pose.pose.position.y = target_position_.y;
+    target_pose.pose.position.z = target_position_.z;
+    group.setPoseTarget(target_pose, group.getEndEffectorLink());
+    group.setGoalTolerance(0.1);
+    group.setGoalOrientationTolerance(0.01);
+    group.setPlanningTime(10.0);
+    // Moving to pose goal
+    ROS_INFO("Moving group");
+    group.move();
   }
 
   while (going) {
@@ -96,8 +125,9 @@ void MoveToPositionAction::executeCB() {
       going = false;
     }
 
+
     // TODO
-    // perform motion of the arm
+    // check if motion is complete by comparing end effector position with target_position_
 
     ros::spinOnce();
     r.sleep();
