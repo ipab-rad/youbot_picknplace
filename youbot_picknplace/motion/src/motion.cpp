@@ -10,6 +10,9 @@
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion");
   ros::NodeHandle nh("motion");
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+  
   ROS_INFO("Running Motion");
   MoveToPositionAction movetoposition(nh, "move_to_position");
 

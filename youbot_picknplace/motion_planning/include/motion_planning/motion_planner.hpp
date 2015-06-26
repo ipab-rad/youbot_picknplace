@@ -20,7 +20,7 @@ class MotionPlanner {
   explicit MotionPlanner(ros::NodeHandle* nh);
   ~MotionPlanner();
   bool planMotion(motion_planning_msgs::PlanMotion::Request& req,
-                      motion_planning_msgs::PlanMotion::Response& res);
+        motion_planning_msgs::PlanMotion::Response& res);
 
  private:
 

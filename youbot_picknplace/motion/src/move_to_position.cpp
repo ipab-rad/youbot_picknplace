@@ -112,12 +112,14 @@ void MoveToPositionAction::executeCB() {
     group.setPoseTarget(target_pose, group.getEndEffectorLink());
     group.setGoalTolerance(0.1);
     group.setGoalOrientationTolerance(0.01);
-    group.setPlanningTime(10.0);
+    group.setPlanningTime(20.0);
+
     // Moving to pose goal
-    ROS_INFO("Moving group");
     group.move();
+    ROS_INFO("Commanded Move Group to execute motion");
   }
 
+  
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
       ROS_INFO("%s: Preempted", action_name_.c_str());
@@ -125,9 +127,23 @@ void MoveToPositionAction::executeCB() {
       going = false;
     }
 
+    moveit::planning_interface::MoveGroup group("arm_1");
 
-    // TODO
-    // check if motion is complete by comparing end effector position with target_position_
+    geometry_msgs::PoseStamped curr_pose_ = group.getCurrentPose();
+    ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x,curr_pose_.pose.position.y,curr_pose_.pose.position.z);
+    float distance = sqrt(pow(curr_pose_.pose.position.x-target_position_.x, 2) +
+                          pow(curr_pose_.pose.position.y-target_position_.y, 2) +
+                          pow(curr_pose_.pose.position.z-target_position_.z, 2) );
+    ROS_INFO("Current distance to desired pose: %f", distance);
+
+
+
+    //  TODO fix this condition as it needs to use some threshold
+    //  now it accepts any distance
+    if (distance < 0.1){
+      going = false;
+      success = true;
+    }
 
     ros::spinOnce();
     r.sleep();
