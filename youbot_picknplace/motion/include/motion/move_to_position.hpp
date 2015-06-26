@@ -28,8 +28,6 @@ class MoveToPositionAction {
 
   void init();
 
-  void positionCB(const sensor_msgs::JointState::ConstPtr& msg);
-
   void goalCB();
 
   void preemptCB();
@@ -38,12 +36,6 @@ class MoveToPositionAction {
 
  private:
   geometry_msgs::Point target_position_;
-
-  ros::Subscriber joint_pos_sub_;
-  std::vector<double> joint_pos_;
-
-  ros::ServiceClient planning_client_;
-  motion_planning_msgs::PlanMotion planning_srv_;
 };
 
 
