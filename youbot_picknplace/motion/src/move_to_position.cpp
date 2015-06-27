@@ -24,6 +24,7 @@ MoveToPositionAction::~MoveToPositionAction(void) {
 }
 
 void MoveToPositionAction::init() {
+  distance_threshold_ = 0.03;
 }
 
 void MoveToPositionAction::goalCB() {
@@ -49,7 +50,7 @@ void MoveToPositionAction::executeCB() {
   if (going){
     geometry_msgs::PoseStamped target_pose;
     target_pose.header.frame_id = "base_footprint";
-    geometry_msgs::Quaternion quat ;
+    geometry_msgs::Quaternion quat;
     quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129,0.0549,1.686);
     target_pose.pose.orientation.x = quat.x;
     target_pose.pose.orientation.y = quat.y;
@@ -76,8 +77,11 @@ void MoveToPositionAction::executeCB() {
       feedback_.curr_state = 1;
       as_.publishFeedback(feedback_);
 
+      timed_out_ = false;
+      timer_ = nh_.createTimer(ros::Duration(60), &MoveToPositionAction::timerCB, this, true);
+
       // do non-blocking move request
-      group.asyncExecute(plan);
+      group.execute(plan);
       // publish feedback that it is executing motion
       feedback_.curr_state = 2;
       as_.publishFeedback(feedback_);
@@ -92,6 +96,13 @@ void MoveToPositionAction::executeCB() {
       going = false;
     }
 
+    if (timed_out_){
+      ROS_INFO("%s: Timed out", action_name_.c_str());
+      // TODO: set as preempted?
+      going = false;
+    }
+
+
     geometry_msgs::PoseStamped curr_pose_ = group.getCurrentPose();
     ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x,curr_pose_.pose.position.y,curr_pose_.pose.position.z);
     float distance = sqrt(pow(curr_pose_.pose.position.x-target_position_.x, 2) +
@@ -101,7 +112,7 @@ void MoveToPositionAction::executeCB() {
 
     //  TODO fix this condition as it needs to use some threshold
     //  now it accepts any distance
-    if (distance < 0.02){
+    if (distance < distance_threshold_){
       going = false;
       success = true;
     }
@@ -122,4 +133,8 @@ void MoveToPositionAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
+}
+
+void MoveToPositionAction::timerCB(const ros::TimerEvent& event) {
+  timed_out_ = true;
 }

@@ -14,6 +14,7 @@
 class MoveToPositionAction {
  protected:
   ros::NodeHandle nh_;
+
   // NodeHandle instance must be created before this line.
   // Otherwise strange error may occur.
   actionlib::SimpleActionServer<motion_msgs::MoveToPositionAction> as_;
@@ -34,8 +35,21 @@ class MoveToPositionAction {
 
   void executeCB();
 
+  void timerCB(const ros::TimerEvent& event);
+
+
  private:
   geometry_msgs::Point target_position_;
+
+  // threshold
+  double distance_threshold_;
+
+  // timer for action timeout
+  ros::Timer timer_;
+  bool timed_out_;
+
+
+
 };
 
 
