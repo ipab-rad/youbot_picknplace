@@ -11,6 +11,6 @@
 
   <!-- start obj listener -->
   <node pkg="object_recognition_core" type="detection" name="object_detector" 
-  	args="-c $(find object_recognition_tabletop)/conf/detection.object.ros.ork"/>
+  	args="-c $(find sensing)/conf/detection.object.ros.ork"/>
 
 </launch>
