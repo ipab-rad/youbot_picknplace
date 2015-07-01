@@ -41,7 +41,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>motion_msgs</build_depend>
-  <build_depend>motion_planning_msgs</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
@@ -49,7 +48,6 @@
 
   <run_depend>roscpp</run_depend>
   <run_depend>motion_msgs</run_depend>
-  <run_depend>motion_planning_msgs</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>moveit_ros_planning_interface</run_depend>
   <run_depend>moveit_ros_planning</run_depend>

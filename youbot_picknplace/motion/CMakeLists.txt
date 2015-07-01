@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
  actionlib
  roscpp
  motion_msgs
- motion_planning_msgs
  moveit_core moveit_ros_planning moveit_ros_planning_interface
  )
 
@@ -82,24 +81,34 @@ include_directories(SYSTEM ${Eigen_INCLUDE_DIRS})
 ## Declare a cpp executable
 add_executable(motion
   src/motion.cpp
-  src/move_to_position.cpp
+  src/move_to_pose.cpp
+  src/move_to_posture.cpp
 )
 
-add_executable(motion_client
-  src/move_to_position_client.cpp
+add_executable(motion_pose_client
+  src/move_to_pose_client.cpp
+)
+
+add_executable(motion_posture_client
+  src/move_to_posture_client.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(motion motion_msgs motion_planning_msgs)
-add_dependencies(motion_client motion_msgs)
+add_dependencies(motion motion_msgs)
+add_dependencies(motion_pose_client motion_msgs)
+add_dependencies(motion_posture_client motion_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(motion_client
+target_link_libraries(motion_pose_client
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(motion_posture_client
   ${catkin_LIBRARIES}
 )
 

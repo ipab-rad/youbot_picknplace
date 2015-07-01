@@ -1,43 +1,40 @@
-#include "motion/move_to_position.hpp"
-#include "motion_msgs/MoveToPositionAction.h"
+#include "motion/move_to_pose.hpp"
+#include "motion_msgs/MoveToPoseAction.h"
 
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
- //tf
-#include <tf/transform_datatypes.h>
-
-MoveToPositionAction::MoveToPositionAction(ros::NodeHandle nh, std::string name) :
+MoveToPoseAction::MoveToPoseAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
   action_name_(name) {
   //register the goal and feeback callbacks
-  as_.registerGoalCallback(boost::bind(&MoveToPositionAction::goalCB, this));
-  as_.registerPreemptCallback(boost::bind(&MoveToPositionAction::preemptCB, this));
+  as_.registerGoalCallback(boost::bind(&MoveToPoseAction::goalCB, this));
+  as_.registerPreemptCallback(boost::bind(&MoveToPoseAction::preemptCB, this));
 
   this->init();
-  ROS_INFO("Starting MoveToPosition server");
+  ROS_INFO("Starting MoveToPose server");
   as_.start();
 }
 
-MoveToPositionAction::~MoveToPositionAction(void) {
+MoveToPoseAction::~MoveToPoseAction(void) {
 }
 
-void MoveToPositionAction::init() {
+void MoveToPoseAction::init() {
   distance_threshold_ = 0.03;
 }
 
-void MoveToPositionAction::goalCB() {
-  target_position_ = as_.acceptNewGoal()->position;
+void MoveToPoseAction::goalCB() {
+  target_pose_ = as_.acceptNewGoal()->pose;
   this->executeCB();
 }
 
-void MoveToPositionAction::preemptCB() {
+void MoveToPoseAction::preemptCB() {
   ROS_INFO("Preempt");
   as_.setPreempted();
 }
 
-void MoveToPositionAction::executeCB() {
+void MoveToPoseAction::executeCB() {
   bool going = true;
   bool success = false;
   ros::Rate r(10);
@@ -48,20 +45,8 @@ void MoveToPositionAction::executeCB() {
   moveit::planning_interface::MoveGroup group("arm_1");
 
   if (going){
-    geometry_msgs::PoseStamped target_pose;
-    target_pose.header.frame_id = "base_footprint";
-    geometry_msgs::Quaternion quat;
-    quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129,0.0549,1.686);
-    target_pose.pose.orientation.x = quat.x;
-    target_pose.pose.orientation.y = quat.y;
-    target_pose.pose.orientation.z = quat.z;
-    target_pose.pose.orientation.w = quat.w;
-    ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-    target_pose.pose.position.x = target_position_.x;
-    target_pose.pose.position.y = target_position_.y;
-    target_pose.pose.position.z = target_position_.z;
 
-    group.setJointValueTarget(target_pose, group.getEndEffectorLink());
+    group.setJointValueTarget(target_pose_, group.getEndEffectorLink());
     group.setGoalTolerance(0.1);
     group.setGoalOrientationTolerance(0.01);
     group.setPlanningTime(20.0);
@@ -78,7 +63,7 @@ void MoveToPositionAction::executeCB() {
       as_.publishFeedback(feedback_);
 
       timed_out_ = false;
-      timer_ = nh_.createTimer(ros::Duration(60), &MoveToPositionAction::timerCB, this, true);
+      timer_ = nh_.createTimer(ros::Duration(60), &MoveToPoseAction::timerCB, this, true);
 
       // do non-blocking move request
       group.execute(plan);
@@ -105,9 +90,9 @@ void MoveToPositionAction::executeCB() {
 
     geometry_msgs::PoseStamped curr_pose_ = group.getCurrentPose();
     ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x,curr_pose_.pose.position.y,curr_pose_.pose.position.z);
-    float distance = sqrt(pow(curr_pose_.pose.position.x-target_position_.x, 2) +
-                          pow(curr_pose_.pose.position.y-target_position_.y, 2) +
-                          pow(curr_pose_.pose.position.z-target_position_.z, 2) );
+    float distance = sqrt(pow(curr_pose_.pose.position.x-target_pose_.pose.position.x, 2) +
+                          pow(curr_pose_.pose.position.y-target_pose_.pose.position.y, 2) +
+                          pow(curr_pose_.pose.position.z-target_pose_.pose.position.z, 2) );
     ROS_INFO("Current distance to desired pose: %f", distance);
 
     //  TODO fix this condition as it needs to use some threshold
@@ -135,6 +120,6 @@ void MoveToPositionAction::executeCB() {
   }
 }
 
-void MoveToPositionAction::timerCB(const ros::TimerEvent& event) {
+void MoveToPoseAction::timerCB(const ros::TimerEvent& event) {
   timed_out_ = true;
 }
