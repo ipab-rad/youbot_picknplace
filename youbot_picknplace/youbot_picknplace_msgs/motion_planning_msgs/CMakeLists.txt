@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_action_files(
    FILES
    PlanApproach.action
+   PlanPick.action
  )
 
 ## Generate added messages and services with any dependencies listed here

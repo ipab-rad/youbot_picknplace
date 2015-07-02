@@ -1,5 +1,5 @@
-#include "motion_planning/plan_approach.hpp"
-#include "motion_planning_msgs/PlanApproachAction.h"
+#include "motion_planning/plan_pick.hpp"
+#include "motion_planning_msgs/PlanPickAction.h"
 #include "motion_msgs/MoveToPoseAction.h"
 #include <actionlib/client/simple_action_client.h>
 // #include <actionlib/client/terminal_state.h>
@@ -7,37 +7,37 @@
  //tf
 #include <tf/transform_datatypes.h>
 
-PlanApproachAction::PlanApproachAction(ros::NodeHandle nh, std::string name) :
+PlanPickAction::PlanPickAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
   action_name_(name)
   {
   //register the goal and feeback callbacks
-  as_.registerGoalCallback(boost::bind(&PlanApproachAction::goalCB, this));
-  as_.registerPreemptCallback(boost::bind(&PlanApproachAction::preemptCB, this));
+  as_.registerGoalCallback(boost::bind(&PlanPickAction::goalCB, this));
+  as_.registerPreemptCallback(boost::bind(&PlanPickAction::preemptCB, this));
 
   this->init();
-  ROS_INFO("Starting PlanApproach server");
+  ROS_INFO("Starting PlanPick server");
   as_.start();
 }
 
-PlanApproachAction::~PlanApproachAction(void) {
+PlanPickAction::~PlanPickAction(void) {
 }
 
-void PlanApproachAction::init() {
+void PlanPickAction::init() {
 }
 
-void PlanApproachAction::goalCB() {
+void PlanPickAction::goalCB() {
   object_pose_ = as_.acceptNewGoal()->object_pose;
   this->executeCB();
 }
 
-void PlanApproachAction::preemptCB() {
+void PlanPickAction::preemptCB() {
   ROS_INFO("Preempt");
   as_.setPreempted();
 }
 
-void PlanApproachAction::executeCB() {
+void PlanPickAction::executeCB() {
   bool going = true;
   bool success = false;
   ros::Rate r(10);
@@ -58,7 +58,7 @@ void PlanApproachAction::executeCB() {
   ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
   target_pose.pose.position.x = object_pose_.pose.position.x;
   target_pose.pose.position.y = object_pose_.pose.position.y;
-  target_pose.pose.position.z = 0.1;
+  target_pose.pose.position.z = object_pose_.pose.position.z;
   goal.pose = target_pose;
     // move to pose action
   actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_("motion/move_to_pose", true);
@@ -66,7 +66,7 @@ void PlanApproachAction::executeCB() {
   ROS_INFO("Server has connected");
 
   ac_.sendGoal(goal);
-
+  
   feedback_.curr_state = 1;
   as_.publishFeedback(feedback_);
 
@@ -101,6 +101,6 @@ void PlanApproachAction::executeCB() {
   }
 }
 
-void PlanApproachAction::timerCB(const ros::TimerEvent& event) {
+void PlanPickAction::timerCB(const ros::TimerEvent& event) {
   timed_out_ = true;
 }
