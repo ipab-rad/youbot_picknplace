@@ -1,40 +1,39 @@
-#include "motion/move_to_posture.hpp"
-#include "motion_msgs/MoveToPostureAction.h"
+#include "motion/move_gripper.hpp"
+#include "motion_msgs/MoveGripperAction.h"
 
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-MoveToPostureAction::MoveToPostureAction(ros::NodeHandle nh, std::string name) :
+MoveGripperAction::MoveGripperAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
   action_name_(name) {
   //register the goal and feeback callbacks
-  as_.registerGoalCallback(boost::bind(&MoveToPostureAction::goalCB, this));
-  as_.registerPreemptCallback(boost::bind(&MoveToPostureAction::preemptCB, this));
+  as_.registerGoalCallback(boost::bind(&MoveGripperAction::goalCB, this));
+  as_.registerPreemptCallback(boost::bind(&MoveGripperAction::preemptCB, this));
 
   this->init();
-  ROS_INFO("Starting MoveToPosture server");
+  ROS_INFO("Starting MoveGripper server");
   as_.start();
 }
 
-MoveToPostureAction::~MoveToPostureAction(void) {
+MoveGripperAction::~MoveGripperAction(void) {
 }
 
-void MoveToPostureAction::init() {
-  distance_threshold_ = 0.03;
+void MoveGripperAction::init() {
 }
 
-void MoveToPostureAction::goalCB() {
+void MoveGripperAction::goalCB() {
   target_posture_ = as_.acceptNewGoal()->posture;
   this->executeCB();
 }
 
-void MoveToPostureAction::preemptCB() {
+void MoveGripperAction::preemptCB() {
   ROS_INFO("Preempt");
   as_.setPreempted();
 }
 
-void MoveToPostureAction::executeCB() {
+void MoveGripperAction::executeCB() {
   bool going = true;
   bool success = false;
   ros::Rate r(10);
@@ -42,7 +41,7 @@ void MoveToPostureAction::executeCB() {
   feedback_.curr_state = 0;
   as_.publishFeedback(feedback_);
   // get move it to execute motion
-  moveit::planning_interface::MoveGroup group("arm_1");
+  moveit::planning_interface::MoveGroup group("arm_1_gripper");
 
   if (going){
 
@@ -60,9 +59,6 @@ void MoveToPostureAction::executeCB() {
       feedback_.curr_state = 1;
       as_.publishFeedback(feedback_);
 
-      timed_out_ = false;
-      timer_ = nh_.createTimer(ros::Duration(60), &MoveToPostureAction::timerCB, this, true);
-
       // do non-blocking move request
       group.execute(plan);
       // publish feedback that it is executing motion
@@ -71,10 +67,10 @@ void MoveToPostureAction::executeCB() {
     }
   }
 
-  
   // TODO: fix next lines
   going = false;
   success = true;
+
   
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -107,6 +103,6 @@ void MoveToPostureAction::executeCB() {
   }
 }
 
-void MoveToPostureAction::timerCB(const ros::TimerEvent& event) {
+void MoveGripperAction::timerCB(const ros::TimerEvent& event) {
   timed_out_ = true;
 }

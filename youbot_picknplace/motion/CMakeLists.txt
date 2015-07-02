@@ -83,6 +83,7 @@ add_executable(motion
   src/motion.cpp
   src/move_to_pose.cpp
   src/move_to_posture.cpp
+  src/move_gripper.cpp
 )
 
 add_executable(motion_pose_client

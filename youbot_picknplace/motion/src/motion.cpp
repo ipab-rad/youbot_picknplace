@@ -7,6 +7,8 @@
 
 #include "motion/move_to_pose.hpp"
 #include "motion/move_to_posture.hpp"
+#include "motion/move_gripper.hpp"
+
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion");
@@ -17,6 +19,8 @@ int main(int argc, char** argv) {
   ROS_INFO("Running Motion");
   MoveToPoseAction movetopose(nh, "move_to_pose");
   MoveToPostureAction movetoposture(nh, "move_to_posture");
+  MoveGripperAction movegripper(nh, "move_gripper");
+
 
   ros::spin();
   return 0;

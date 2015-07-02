@@ -59,6 +59,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    MoveToPose.action
    MoveToPosture.action
+   MoveGripper.action
  )
 
 ## Generate added messages and services with any dependencies listed here

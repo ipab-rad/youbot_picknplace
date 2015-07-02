@@ -1,0 +1,12 @@
+#goal definition
+string posture
+---
+#result definition
+bool success
+---
+#feedback
+# INITIAL=0
+# PLANNED=1
+# EXECUTING=2
+# FINISHED=3
+uint8 curr_state
