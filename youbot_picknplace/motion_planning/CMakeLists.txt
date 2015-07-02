@@ -6,11 +6,9 @@ project(motion_planning)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
-  pluginlib
   roscpp
   motion_msgs
   motion_planning_msgs
-  moveit_core moveit_ros_planning moveit_ros_planning_interface
 )
 
 
@@ -81,7 +79,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion_planning
-  CATKIN_DEPENDS actionlib roscpp moveit_core moveit_ros_planning moveit_ros_planning_interface
+  CATKIN_DEPENDS actionlib roscpp
 #  DEPENDS system_lib
 )
 
@@ -111,15 +109,22 @@ include_directories(SYSTEM ${Eigen_INCLUDE_DIRS})
 ## Declare a cpp executable
 add_executable(motion_planning
  src/motion_planning.cpp
- src/motion_planner.cpp
+ src/plan_approach.cpp
 )
 
+add_executable(plan_approach_client
+ src/plan_approach_client.cpp
+)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion_planning motion_msgs motion_planning_msgs)
+add_dependencies(plan_approach_client motion_planning_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planning
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(plan_approach_client
   ${catkin_LIBRARIES}
 )
 

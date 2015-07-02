@@ -1,0 +1,11 @@
+#goal definition
+geometry_msgs/PoseStamped object_pose
+---
+#result definition
+bool success
+---
+#feedback
+# INITIAL=0
+# EXECUTING=1
+# FINISHED=2
+uint8 curr_state
