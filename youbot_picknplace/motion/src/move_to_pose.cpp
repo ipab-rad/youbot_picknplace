@@ -47,8 +47,8 @@ void MoveToPoseAction::executeCB() {
   if (going){
 
     group.setJointValueTarget(target_pose_, group.getEndEffectorLink());
-    group.setGoalTolerance(0.1);
-    group.setGoalOrientationTolerance(0.01);
+    group.setGoalTolerance(0.02);
+    group.setGoalOrientationTolerance(0.02);
     group.setPlanningTime(20.0);
     move_group_interface::MoveGroup::Plan plan;
     if (!group.plan(plan))
