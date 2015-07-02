@@ -31,7 +31,7 @@ int main (int argc, char **argv)
   target_pose.pose.orientation.w = quat.w;
   ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
   target_pose.pose.position.x = 0.12;
-  target_pose.pose.position.y = -0.15;
+  target_pose.pose.position.y = -0.25;
   target_pose.pose.position.z = 0.0;
   goal.object_pose = target_pose;
 

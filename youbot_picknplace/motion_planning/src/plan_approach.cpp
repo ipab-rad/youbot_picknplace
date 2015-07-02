@@ -58,7 +58,7 @@ void PlanApproachAction::executeCB() {
   ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
   target_pose.pose.position.x = object_pose_.pose.position.x;
   target_pose.pose.position.y = object_pose_.pose.position.y;
-  target_pose.pose.position.z = 0.1;
+  target_pose.pose.position.z = object_pose_.pose.position.z + 0.05;
   goal.pose = target_pose;
     // move to pose action
   actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_("motion/move_to_pose", true);

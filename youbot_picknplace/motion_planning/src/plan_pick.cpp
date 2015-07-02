@@ -1,6 +1,7 @@
 #include "motion_planning/plan_pick.hpp"
 #include "motion_planning_msgs/PlanPickAction.h"
 #include "motion_msgs/MoveToPoseAction.h"
+#include "motion_msgs/MoveGripperAction.h"
 #include <actionlib/client/simple_action_client.h>
 // #include <actionlib/client/terminal_state.h>
 
@@ -45,7 +46,21 @@ void PlanPickAction::executeCB() {
   feedback_.curr_state = 0;
   as_.publishFeedback(feedback_);
 
+  // open gripper action
+  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("motion/move_gripper", true);
+  motion_msgs::MoveGripperGoal open_gripper_goal;
+  open_gripper_goal.posture = "open";
+  ac_gripper_.waitForServer();
+  ROS_INFO("Opening Gripper");
+  ac_gripper_.sendGoal(open_gripper_goal);
+
+  feedback_.curr_state = 1;
+  as_.publishFeedback(feedback_);
+
+  sleep(5.0);
+
   // send a movement to pose goal to the action
+  actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_move_("motion/move_to_pose", true);
   motion_msgs::MoveToPoseGoal goal;
   geometry_msgs::PoseStamped target_pose;
   target_pose.header.frame_id = "base_footprint";
@@ -61,14 +76,19 @@ void PlanPickAction::executeCB() {
   target_pose.pose.position.z = object_pose_.pose.position.z;
   goal.pose = target_pose;
     // move to pose action
-  actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_("motion/move_to_pose", true);
-  ac_.waitForServer();
-  ROS_INFO("Server has connected");
+  ac_move_.waitForServer();
+  ROS_INFO("Picking up object");
 
-  ac_.sendGoal(goal);
-  
-  feedback_.curr_state = 1;
-  as_.publishFeedback(feedback_);
+  ac_move_.sendGoal(goal);
+
+  sleep(5.0);
+
+
+  //  close gripper
+  open_gripper_goal.posture = "close";
+  ROS_INFO("Closing Gripper");
+  ac_gripper_.sendGoal(open_gripper_goal);
+
 
   going = false;
   success = true;

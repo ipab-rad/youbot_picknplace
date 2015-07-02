@@ -7,6 +7,7 @@
 
  #include "motion_planning/plan_approach.hpp"
  #include "motion_planning/plan_pick.hpp"
+ #include "motion_planning/plan_place.hpp"
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion_planning");
@@ -15,6 +16,7 @@ int main(int argc, char** argv) {
 
   PlanApproachAction approachPlanner(nh, "plan_approach");
   PlanPickAction pickPlanner(nh, "plan_pick");
+  PlanPlaceAction placePlanner(nh, "plan_place");
 
 
   ros::spin();

@@ -111,6 +111,7 @@ add_executable(motion_planning
  src/motion_planning.cpp
  src/plan_approach.cpp
  src/plan_pick.cpp
+ src/plan_place.cpp
 )
 
 add_executable(plan_approach_client
@@ -119,6 +120,10 @@ add_executable(plan_approach_client
 
 add_executable(plan_pick_client
  src/plan_pick_client.cpp
+)
+
+add_executable(plan_place_client
+ src/plan_place_client.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
@@ -135,6 +140,9 @@ target_link_libraries(plan_approach_client
   ${catkin_LIBRARIES}
 )
 target_link_libraries(plan_pick_client
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(plan_place_client
   ${catkin_LIBRARIES}
 )
 #############
