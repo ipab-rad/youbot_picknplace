@@ -5,7 +5,10 @@
  * @date      2015-06-20
  */
 
-#include "motion/move_to_position.hpp"
+#include "motion/move_to_pose.hpp"
+#include "motion/move_to_posture.hpp"
+#include "motion/move_gripper.hpp"
+
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion");
@@ -14,7 +17,9 @@ int main(int argc, char** argv) {
   spinner.start();
   
   ROS_INFO("Running Motion");
-  MoveToPositionAction movetoposition(nh, "move_to_position");
+  MoveToPoseAction movetopose(nh, "move_to_pose");
+  MoveToPostureAction movetoposture(nh, "move_to_posture");
+  MoveGripperAction movegripper(nh, "move_gripper");
 
 
   ros::spin();

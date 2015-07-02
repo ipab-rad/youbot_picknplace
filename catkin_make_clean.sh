@@ -1,0 +1,2 @@
+bash catkin_make_youbot_picknplace.sh msgs
+bash catkin_make_wipe.sh

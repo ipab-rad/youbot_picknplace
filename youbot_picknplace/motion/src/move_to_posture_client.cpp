@@ -1,15 +1,18 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <motion_msgs/MoveToPositionAction.h>
+#include <motion_msgs/MoveToPostureAction.h>
+
+ //tf
+#include <tf/transform_datatypes.h>
 
 int main (int argc, char **argv)
 {
-  ros::init(argc, argv, "test_movetoposition");
+  ros::init(argc, argv, "test_movetoposture");
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<motion_msgs::MoveToPositionAction> ac("motion/move_to_position", true);
+  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac("motion/move_to_posture", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
@@ -17,10 +20,9 @@ int main (int argc, char **argv)
 
   ROS_INFO("Action server started, sending goal.");
   // send a goal to the action
-  motion_msgs::MoveToPositionGoal goal;
-  goal.position.x = 0.12;
-  goal.position.y = -0.15;
-  goal.position.z = 0.21;
+  motion_msgs::MoveToPostureGoal goal;
+  goal.posture = "candle";
+
 
   ac.sendGoal(goal);
 

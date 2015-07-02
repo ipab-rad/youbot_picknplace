@@ -5,6 +5,8 @@ project(motion_planning_msgs)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  actionlib
+  geometry_msgs
   message_generation
 )
 
@@ -47,21 +49,25 @@ find_package(catkin REQUIRED COMPONENTS
 #)
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  PlanMotion.srv
-)
+#add_service_files(
+#  FILES
+#
+#)
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+ add_action_files(
+   FILES
+   PlanApproach.action
+   PlanPick.action
+   PlanPlace.action
+ )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
+  std_msgs
+  actionlib_msgs
+  geometry_msgs
 )
 
 ###################################
@@ -75,7 +81,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES motion_msgs
+#  LIBRARIES motion_planning_msgs
 #  CATKIN_DEPENDS message_generation
 #  DEPENDS system_lib
 )
@@ -92,19 +98,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(motion_msgs
-#   src/${PROJECT_NAME}/motion_msgs.cpp
+# add_library(motion_planning_msgs
+#   src/${PROJECT_NAME}/motion_planning_msgs.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(motion_msgs_node src/motion_msgs_node.cpp)
+# add_executable(motion_planning_msgs_node src/motion_planning_msgs_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(motion_msgs_node motion_msgs_generate_messages_cpp)
+# add_dependencies(motion_planning_msgs_node motion_planning_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(motion_msgs_node
+# target_link_libraries(motion_planning_msgs_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -123,7 +129,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS motion_msgs motion_msgs_node
+# install(TARGETS motion_planning_msgs motion_planning_msgs_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -148,7 +154,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_motion_msgs.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_motion_planning_msgs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
