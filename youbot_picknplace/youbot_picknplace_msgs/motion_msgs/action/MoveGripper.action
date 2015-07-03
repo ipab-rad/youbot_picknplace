@@ -1,5 +1,7 @@
 #goal definition
-string posture
+# 0 close
+# 1 open
+uint8 command
 ---
 #result definition
 bool success

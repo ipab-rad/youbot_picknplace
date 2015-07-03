@@ -5,14 +5,13 @@
 #include <actionlib/client/simple_action_client.h>
 // #include <actionlib/client/terminal_state.h>
 
- //tf
+//tf
 #include <tf/transform_datatypes.h>
 
 PlanPlaceAction::PlanPlaceAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
-  action_name_(name)
-  {
+  action_name_(name) {
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&PlanPlaceAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlanPlaceAction::preemptCB, this));
@@ -50,7 +49,7 @@ void PlanPlaceAction::executeCB() {
   actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_("motion/move_to_posture", true);
   motion_msgs::MoveToPostureGoal goal;
   goal.posture = "back_drop";
-    // move to pose action
+  // move to pose action
   ac_move_.waitForServer();
   ROS_INFO("Placing down object");
 
@@ -59,12 +58,12 @@ void PlanPlaceAction::executeCB() {
   feedback_.curr_state = 1;
   as_.publishFeedback(feedback_);
 
-  sleep(5.0);
+  sleep(15.0);
 
-    // open gripper action
-  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("motion/move_gripper", true);
+  // open gripper action
+  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("gripper_motion/move_gripper", true);
   motion_msgs::MoveGripperGoal open_gripper_goal;
-  open_gripper_goal.posture = "open";
+  open_gripper_goal.command = 1;
   ac_gripper_.waitForServer();
   ROS_INFO("Opening Gripper");
   ac_gripper_.sendGoal(open_gripper_goal);

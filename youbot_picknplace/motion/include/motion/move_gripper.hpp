@@ -8,6 +8,9 @@
 #include <actionlib/server/simple_action_server.h>
 // Messages
 #include <motion_msgs/MoveGripperAction.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
+
 
 class MoveGripperAction {
  protected:
@@ -37,8 +40,17 @@ class MoveGripperAction {
 
 
  private:
-  std::string target_posture_;
+  int gripper_command_;
+  trajectory_msgs::JointTrajectory trajectory_;
+  trajectory_msgs::JointTrajectoryPoint trajectory_pt1_;
+  trajectory_msgs::JointTrajectoryPoint trajectory_pt2_;
+  std::string joint_name1_;
+  std::string joint_name2_;
 
+  std::string gripper_topic_;
+  std::string gripper_topic_sim_;
+  ros::Publisher gripper_pub_;
+  ros::Publisher gripper_pub_sim_;
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
