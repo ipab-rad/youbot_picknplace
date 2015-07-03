@@ -29,8 +29,8 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
     <node name="gripper_motion" pkg="motion" type="gripper_motion" output="screen">
         </node>
 
-        <!-- motion planning action servers -->
-        <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen">
+    <!-- motion planning action servers -->
+    <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen">
         </node>
 
 </launch>

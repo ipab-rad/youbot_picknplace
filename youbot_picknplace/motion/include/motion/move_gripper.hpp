@@ -48,7 +48,9 @@ class MoveGripperAction {
   std::string joint_name2_;
 
   std::string gripper_topic_;
+  std::string gripper_topic_sim_;
   ros::Publisher gripper_pub_;
+  ros::Publisher gripper_pub_sim_;
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
