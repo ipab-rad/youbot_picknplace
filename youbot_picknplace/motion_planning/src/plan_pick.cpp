@@ -80,13 +80,14 @@ void PlanPickAction::executeCB() {
 
   ac_move_.sendGoal(goal);
 
-  sleep(5.0);
+  sleep(10.0);
 
+  motion_msgs::MoveGripperGoal close_gripper_goal;
 
   //  close gripper
-  open_gripper_goal.command = 0;
+  close_gripper_goal.command = 0;
   ROS_INFO("Closing Gripper");
-  ac_gripper_.sendGoal(open_gripper_goal);
+  ac_gripper_.sendGoal(close_gripper_goal);
 
 
   going = false;

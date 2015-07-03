@@ -58,7 +58,7 @@ void PlanPlaceAction::executeCB() {
   feedback_.curr_state = 1;
   as_.publishFeedback(feedback_);
 
-  sleep(5.0);
+  sleep(15.0);
 
   // open gripper action
   actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("gripper_motion/move_gripper", true);
