@@ -5,14 +5,13 @@
 #include <actionlib/client/simple_action_client.h>
 // #include <actionlib/client/terminal_state.h>
 
- //tf
+//tf
 #include <tf/transform_datatypes.h>
 
 PlanPickAction::PlanPickAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
-  action_name_(name)
-  {
+  action_name_(name) {
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&PlanPickAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlanPickAction::preemptCB, this));
@@ -47,9 +46,9 @@ void PlanPickAction::executeCB() {
   as_.publishFeedback(feedback_);
 
   // open gripper action
-  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("motion/move_gripper", true);
+  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("gripper_motion/move_gripper", true);
   motion_msgs::MoveGripperGoal open_gripper_goal;
-  open_gripper_goal.posture = "open";
+  open_gripper_goal.command = 1;
   ac_gripper_.waitForServer();
   ROS_INFO("Opening Gripper");
   ac_gripper_.sendGoal(open_gripper_goal);
@@ -65,7 +64,7 @@ void PlanPickAction::executeCB() {
   geometry_msgs::PoseStamped target_pose;
   target_pose.header.frame_id = "base_footprint";
   geometry_msgs::Quaternion quat;
-  quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129,0.0549,1.686);
+  quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
   target_pose.pose.orientation.x = quat.x;
   target_pose.pose.orientation.y = quat.y;
   target_pose.pose.orientation.z = quat.z;
@@ -75,7 +74,7 @@ void PlanPickAction::executeCB() {
   target_pose.pose.position.y = object_pose_.pose.position.y;
   target_pose.pose.position.z = object_pose_.pose.position.z;
   goal.pose = target_pose;
-    // move to pose action
+  // move to pose action
   ac_move_.waitForServer();
   ROS_INFO("Picking up object");
 
@@ -85,7 +84,7 @@ void PlanPickAction::executeCB() {
 
 
   //  close gripper
-  open_gripper_goal.posture = "close";
+  open_gripper_goal.command = 0;
   ROS_INFO("Closing Gripper");
   ac_gripper_.sendGoal(open_gripper_goal);
 

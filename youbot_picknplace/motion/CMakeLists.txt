@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
  actionlib
  roscpp
  motion_msgs
+ trajectory_msgs
  moveit_core moveit_ros_planning moveit_ros_planning_interface
  )
 
@@ -52,7 +53,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion
-  CATKIN_DEPENDS actionlib roscpp moveit_core moveit_ros_planning moveit_ros_planning_interface
+  CATKIN_DEPENDS actionlib roscpp moveit_core
+  moveit_ros_planning moveit_ros_planning_interface
 #  DEPENDS system_lib
 )
 
@@ -83,7 +85,7 @@ add_executable(motion
   src/motion.cpp
   src/move_to_pose.cpp
   src/move_to_posture.cpp
-  src/move_gripper.cpp
+  # src/move_gripper.cpp
 )
 
 add_executable(motion_pose_client
@@ -94,11 +96,21 @@ add_executable(motion_posture_client
   src/move_to_posture_client.cpp
 )
 
+add_executable(gripper_motion
+  src/move_gripper.cpp
+)
+
+add_executable(gripper_motion_client
+  src/move_gripper_client.cpp
+)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion motion_msgs)
 add_dependencies(motion_pose_client motion_msgs)
 add_dependencies(motion_posture_client motion_msgs)
+add_dependencies(gripper_motion motion_msgs trajectory_msgs)
+add_dependencies(gripper_motion_client motion_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion
@@ -112,7 +124,12 @@ target_link_libraries(motion_pose_client
 target_link_libraries(motion_posture_client
   ${catkin_LIBRARIES}
 )
-
+target_link_libraries(gripper_motion
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(gripper_motion_client
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

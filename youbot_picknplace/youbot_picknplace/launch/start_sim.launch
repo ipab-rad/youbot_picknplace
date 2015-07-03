@@ -11,7 +11,7 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
 <launch>
 
 		<!-- Launch file starting all necesarry nodes for pick and place task. Arm control, perception and youbot interface itself.
--->	 	
+-->
 		<arg name="robot" value="youbot" />
 		<param name="robot_description_with_cam" command="$(find xacro)/xacro.py $(find youbot_description)/robots/$(arg robot)_with_cam3d.urdf.xacro" />
 
@@ -25,6 +25,8 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
 
  		<!-- motion action servers -->
 		<node name="motion" pkg="motion" type="motion" output="screen">
+        </node>
+    <node name="gripper_motion" pkg="motion" type="gripper_motion" output="screen">
         </node>
 
         <!-- motion planning action servers -->
