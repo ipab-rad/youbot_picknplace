@@ -1,0 +1,11 @@
+#goal definition
+bool detect
+---
+#result definition
+bool success
+---
+#feedback
+# INITIAL=0
+# LISTENING=1
+# FINISHED=2
+uint8 curr_state
