@@ -6,10 +6,12 @@
 // ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-// #include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/simple_action_client.h>
+
 // Messages
-#include <motion_planning_msgs/PlanPlaceAction.h>
-// #include <motion_msgs/MoveToPoseAction.h>
+#include "motion_planning_msgs/PlanPlaceAction.h"
+#include "motion_msgs/MoveToPostureAction.h"
+#include "motion_msgs/MoveGripperAction.h"
 
 
 class PlanPlaceAction {

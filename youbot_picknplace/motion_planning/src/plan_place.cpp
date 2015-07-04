@@ -1,12 +1,4 @@
 #include "motion_planning/plan_place.hpp"
-#include "motion_planning_msgs/PlanPlaceAction.h"
-#include "motion_msgs/MoveToPostureAction.h"
-#include "motion_msgs/MoveGripperAction.h"
-#include <actionlib/client/simple_action_client.h>
-// #include <actionlib/client/terminal_state.h>
-
-//tf
-#include <tf/transform_datatypes.h>
 
 PlanPlaceAction::PlanPlaceAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),

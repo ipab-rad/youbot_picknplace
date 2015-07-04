@@ -109,13 +109,13 @@ include_directories(SYSTEM ${Eigen_INCLUDE_DIRS})
 ## Declare a cpp executable
 add_executable(motion_planning
  src/motion_planning.cpp
- src/plan_approach.cpp
+ src/plan_object_detection.cpp
  src/plan_pick.cpp
  src/plan_place.cpp
 )
 
-add_executable(plan_approach_client
- src/plan_approach_client.cpp
+add_executable(plan_detection_client
+ src/plan_object_detection_client.cpp
 )
 
 add_executable(plan_pick_client
@@ -129,14 +129,14 @@ add_executable(plan_place_client
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion_planning motion_msgs motion_planning_msgs)
-add_dependencies(plan_approach_client motion_planning_msgs)
+add_dependencies(plan_detection_client motion_planning_msgs)
 add_dependencies(plan_pick_client motion_planning_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planning
   ${catkin_LIBRARIES}
 )
-target_link_libraries(plan_approach_client
+target_link_libraries(plan_detection_client
   ${catkin_LIBRARIES}
 )
 target_link_libraries(plan_pick_client

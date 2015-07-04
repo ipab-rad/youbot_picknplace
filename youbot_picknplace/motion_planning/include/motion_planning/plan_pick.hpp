@@ -6,11 +6,11 @@
 // ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-// #include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/simple_action_client.h>
 // Messages
 #include <motion_planning_msgs/PlanPickAction.h>
-// #include <motion_msgs/MoveToPoseAction.h>
-
+#include <motion_msgs/MoveToPoseAction.h>
+#include <motion_msgs/MoveGripperAction.h>
 
 class PlanPickAction {
  protected:
@@ -42,10 +42,15 @@ class PlanPickAction {
  private:
   // action client to execute approach movement
   // actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_;
+  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_;
+  actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_move_;
 
 
 
   geometry_msgs::PoseStamped object_pose_;
+  motion_msgs::MoveToPoseGoal arm_goal_;
+  motion_msgs::MoveGripperGoal gripper_goal_;
+
 
   // timer for action timeout
   ros::Timer timer_;

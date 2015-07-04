@@ -7,7 +7,6 @@ project(sensing)
 find_package(catkin REQUIRED COMPONENTS
  roscpp
  sensing_msgs
- motion_planning_msgs
  tf
  )
 
@@ -97,7 +96,7 @@ add_executable(object_detection_client
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(sensing sensing_msgs motion_planning_msgs)
+add_dependencies(sensing sensing_msgs)
 add_dependencies(object_detection_client sensing_msgs)
 
 

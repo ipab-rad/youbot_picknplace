@@ -1,8 +1,6 @@
 #ifndef OBJECT_DETECTION_SERVER_HPP
 #define OBJECT_DETECTION_SERVER_HPP
 
-// System
-#include <cmath>
 // ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
@@ -10,12 +8,11 @@
 
 // Messages
 #include <sensing_msgs/DetectObjectAction.h>
-#include <motion_planning_msgs/PlanApproachAction.h>
-
 #include "object_recognition_msgs/RecognizedObjectArray.h"
 #include "object_recognition_msgs/RecognizedObject.h"
 // tf
 #include <tf/transform_listener.h>
+#include <tf/transform_datatypes.h>
 
 class DetectObjectAction {
  protected:
@@ -41,8 +38,6 @@ class DetectObjectAction {
 
   void executeCB();
 
-  void timerCB(const ros::TimerEvent& event);
-
   void detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg);
 
  private:
@@ -51,15 +46,6 @@ class DetectObjectAction {
   // object detection
   ros::Subscriber object_sub_ ;
   bool object_found_;
-
-  // pick action client
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachAction> pick_ac_;
-
-  // timer for action timeout
-  ros::Timer timer_;
-  bool timed_out_;
-
-
 
 };
 

@@ -5,16 +5,16 @@
  * @date      2015-06-20
  */
 
- #include "motion_planning/plan_approach.hpp"
- #include "motion_planning/plan_pick.hpp"
- #include "motion_planning/plan_place.hpp"
+#include "motion_planning/plan_object_detection.hpp"
+#include "motion_planning/plan_pick.hpp"
+#include "motion_planning/plan_place.hpp"
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion_planning");
   ros::NodeHandle nh("motion_planning");
   ROS_INFO("Running Motion Planning");
 
-  PlanApproachAction approachPlanner(nh, "plan_approach");
+  PlanObjectDetectionAction detectionPlanner(nh, "plan_detection");
   PlanPickAction pickPlanner(nh, "plan_pick");
   PlanPlaceAction placePlanner(nh, "plan_place");
 

@@ -6,6 +6,7 @@ project(sensing_msgs)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
+  geometry_msgs
   message_generation
 )
 
@@ -62,6 +63,7 @@ add_action_files(
 generate_messages(
  DEPENDENCIES
  std_msgs
+ geometry_msgs
  actionlib_msgs
 )
 
