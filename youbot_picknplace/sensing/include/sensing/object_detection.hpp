@@ -6,8 +6,12 @@
 // ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
+#include <actionlib/client/simple_action_client.h>
+
 // Messages
 #include <sensing_msgs/DetectObjectAction.h>
+#include <motion_planning_msgs/PlanApproachAction.h>
+
 #include "object_recognition_msgs/RecognizedObjectArray.h"
 #include "object_recognition_msgs/RecognizedObject.h"
 // tf
@@ -47,6 +51,9 @@ class DetectObjectAction {
   // object detection
   ros::Subscriber object_sub_ ;
   bool object_found_;
+
+  // pick action client
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachAction> pick_ac_;
 
   // timer for action timeout
   ros::Timer timer_;
