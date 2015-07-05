@@ -1,0 +1,16 @@
+<launch>
+
+  <!-- start xtion -->
+  <!--
+  <include file="$(find rad_youbot_stack)/launch/bringup_picknplace_gazebo.launch">  </include>
+   -->
+
+
+  <!-- static broadcaster -->
+<!--     <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0.1 0 0 0 1 arm_cam3d_camera arm_cam3d_link 100" /> -->
+
+    <!-- start obj detection -->
+    <node pkg="object_recognition_core" type="detection" name="object_detector"
+    args="-c $(find sensing)/conf/detection.object.ros.ork"/>
+
+</launch>

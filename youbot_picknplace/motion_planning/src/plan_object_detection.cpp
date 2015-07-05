@@ -66,8 +66,8 @@ void PlanObjectDetectionAction::executeCB() {
       going = false;
     }
 
-
     if (timed_out_) {
+      // detect_ac_.cancelGoal();
       ROS_INFO("%s: Timed out", action_name_.c_str());
       going = false;
     }

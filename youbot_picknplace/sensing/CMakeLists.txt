@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
  roscpp
  sensing_msgs
  tf
+ openni2_camera
  )
 
 find_package(Boost REQUIRED)

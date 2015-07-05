@@ -13,6 +13,9 @@
 // tf
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
+// openni
+#include "openni2_camera/openni2_device_manager.h"
+#include "openni2_camera/openni2_device.h"
 
 class DetectObjectAction {
  protected:
@@ -41,6 +44,11 @@ class DetectObjectAction {
   void detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg);
 
  private:
+  // camera device
+  openni2_wrapper::OpenNI2DeviceManager device_manager_;
+  boost::shared_ptr<openni2_wrapper::OpenNI2Device> camera_device_;
+
+
   geometry_msgs::PoseStamped object_pose_;
 
   // object detection

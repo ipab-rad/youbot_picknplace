@@ -13,7 +13,8 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
 		<!-- Launch file starting all necesarry nodes for pick and place task. Arm control, perception and youbot interface itself.
 -->
 		<arg name="robot" value="youbot" />
-		<param name="robot_description_with_cam" command="$(find xacro)/xacro.py $(find youbot_description)/robots/$(arg robot)_with_cam3d.urdf.xacro" />
+		<!-- <param name="robot_description_with_cam" command="$(find xacro)/xacro.py $(find youbot_description)/robots/$(arg robot)_with_cam3d.urdf.xacro" />
+    <param name="robot_description_with_cam_semantic" textfile="$(find youbot_moveit_config)/config/youbot.srdf"/> -->
 
 		<!-- launch gazebo world -->
 		<include file="$(find youbot_gazebo_robot)/launch/youbot.launch" >
@@ -32,5 +33,23 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
     <!-- motion planning action servers -->
     <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen">
         </node>
+
+    <!-- start sensing action servers -->
+    <node name="sensing" pkg="sensing" type="sensing" output="screen">
+        </node>
+
+    <!-- start xtion -->
+    <include file="$(find openni2_launch)/launch/openni2.launch">
+      <arg name="camera" value="arm_cam3d" />
+      <arg name="rgb_frame_id"   value="arm_cam3d_rgb_optical_frame" />
+      <arg name="depth_frame_id" value="arm_cam3d_depth_optical_frame" />
+      <arg name="depth_registration" value="true" />
+      <arg name="publish_tf" value="true" />
+    </include>
+
+<!--     <include file="$(find sensing)/launch/object_detection.launch">
+    </include>
+ -->
+
 
 </launch>
