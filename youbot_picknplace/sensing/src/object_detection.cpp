@@ -90,24 +90,20 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
     try {
       ROS_INFO("Object detection frame: %s", object.pose.header.frame_id.c_str());
       geometry_msgs::PoseStamped pin;
-      pin.header = object.pose.header;
+      pin.header.frame_id = object.pose.header.frame_id;
+      pin.header.stamp = ros::Time(0);
       pin.pose = obj_pose;
       geometry_msgs::PoseStamped pout;
 
-      while (!listener.canTransform(object.pose.header.frame_id.c_str(), "/base_footprint", ros::Time(0))) {
-        ROS_INFO("Listening for transform to robot base");
-
-      }
-      // listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-      ROS_INFO("Listened to transform to robot base");
+      listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+      ROS_INFO("Received transform to robot base");
       listener.transformPose("/base_footprint", pin, pout);
       ROS_INFO("Transformed pose into robot's frame");
 
-
       // DEBUG
-      listener.lookupTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), stransform);
-      ROS_INFO("Computed transform to /base_footprint, Point (x,y,z): (%f,%f,%f)", stransform.getOrigin().x(), stransform.getOrigin().y(), stransform.getOrigin().z());
-      ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, -pout.pose.position.y, pout.pose.position.z);
+      // listener.lookupTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), stransform);
+      // ROS_INFO("Computed transform to /base_footprint, Point (x,y,z): (%f,%f,%f)", stransform.getOrigin().x(), stransform.getOrigin().y(), stransform.getOrigin().z());
+      ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
 
       // TODO
       // ATTENTION: it seems coordinates z-y are flipped, so modify it
