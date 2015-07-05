@@ -42,14 +42,22 @@ class PlanPlaceAction {
 
 
  private:
-  // action client to execute approach movement
-  // actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_;
+  // action client to execute place movement
+  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_;
+  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_;
+
+  // message goals
+  motion_msgs::MoveToPostureGoal posture_goal_;
+  motion_msgs::MoveGripperGoal gripper_goal_;
+
 
   bool place_object_;
 
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
+
+
 
 
 

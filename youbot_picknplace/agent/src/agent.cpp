@@ -14,6 +14,7 @@ int main (int argc, char **argv) {
 
   bool done_detect = false;
   bool done_pick = false;
+  bool done_place = false;
   // action lib clients
   actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac("motion_planning/plan_detection", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac("motion_planning/plan_pick", true);
@@ -75,7 +76,7 @@ int main (int argc, char **argv) {
 
     pick_ac.waitForResult();
     if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      // done_pick = true;
+      done_pick = true;
     }
   }
 
@@ -93,9 +94,15 @@ int main (int argc, char **argv) {
 
 
     place_ac.sendGoal(place_goal);
-
+    place_ac.waitForResult();
+    if (place_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      done_place = true;
+    }
   }
 
+  if (done_place) {
+    ROS_INFO("Task completed!");
+  }
 
   //exit
   return 0;

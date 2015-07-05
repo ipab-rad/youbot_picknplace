@@ -3,7 +3,9 @@
 PlanPlaceAction::PlanPlaceAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
-  action_name_(name) {
+  action_name_(name),
+  ac_gripper_("gripper_motion/move_gripper", true),
+  ac_move_("motion/move_to_posture", true) {
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&PlanPlaceAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlanPlaceAction::preemptCB, this));
@@ -32,36 +34,15 @@ void PlanPlaceAction::preemptCB() {
 void PlanPlaceAction::executeCB() {
   bool going = true;
   bool success = false;
+  // states
+  // 0 initial
+  // 1 moved
+  // 2 placed
+  int state = 0;
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
   feedback_.curr_state = 0;
   as_.publishFeedback(feedback_);
-
-  // send a movement to pose goal to the action
-  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_("motion/move_to_posture", true);
-  motion_msgs::MoveToPostureGoal goal;
-  goal.posture = "back_drop";
-  // move to pose action
-  ac_move_.waitForServer();
-  ROS_INFO("Placing down object");
-
-  ac_move_.sendGoal(goal);
-
-  feedback_.curr_state = 1;
-  as_.publishFeedback(feedback_);
-
-  sleep(15.0);
-
-  // open gripper action
-  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_("gripper_motion/move_gripper", true);
-  motion_msgs::MoveGripperGoal open_gripper_goal;
-  open_gripper_goal.command = 1;
-  ac_gripper_.waitForServer();
-  ROS_INFO("Opening Gripper");
-  ac_gripper_.sendGoal(open_gripper_goal);
-
-  going = false;
-  success = true;
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -70,8 +51,37 @@ void PlanPlaceAction::executeCB() {
       going = false;
     }
 
-    // TODO
-    // print status of the action running
+    if ( state == 0) {
+      // send a movement to pose goal to the action
+      posture_goal_.posture = "back_drop";
+      // move to pose action
+      ac_move_.waitForServer();
+      ROS_INFO("Placing down object");
+
+      ac_move_.sendGoal(posture_goal_);
+      feedback_.curr_state = 1;
+      as_.publishFeedback(feedback_);
+      ac_move_.waitForResult();
+      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 1;
+      } else {
+        going = false;
+        success = false;
+      }
+    } else if (state == 1) {
+      // open gripper action
+      gripper_goal_.command = 1;
+      ac_gripper_.waitForServer();
+      ROS_INFO("Opening Gripper");
+      ac_gripper_.sendGoal(gripper_goal_);
+      ac_gripper_.waitForResult();
+      if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        success = true;
+      } else {
+        success = false;
+      }
+      going = false;
+    }
 
     ros::spinOnce();
     r.sleep();

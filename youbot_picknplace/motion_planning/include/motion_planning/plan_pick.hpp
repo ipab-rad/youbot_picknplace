@@ -40,8 +40,7 @@ class PlanPickAction {
 
 
  private:
-  // action client to execute approach movement
-  // actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_;
+  // action client to execute pick movement
   actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_move_;
 
