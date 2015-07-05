@@ -72,6 +72,11 @@ int main (int argc, char **argv) {
     pick_goal.object_pose = obj_ac.getResult()->pose;
 
     pick_ac.sendGoal(pick_goal);
+
+    pick_ac.waitForResult();
+    if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      // done_pick = true;
+    }
   }
 
 

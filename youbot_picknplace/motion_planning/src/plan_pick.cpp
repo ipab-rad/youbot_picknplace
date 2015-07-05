@@ -37,54 +37,17 @@ void PlanPickAction::preemptCB() {
 void PlanPickAction::executeCB() {
   bool going = true;
   bool success = false;
+  // states:
+  // 0 initial
+  // 1 approached
+  // 2 opened gripper
+  // 3 grasped
+  // 4 closed gripper
+  int state = 0;
   ros::Rate r(10);
-  ROS_INFO("Executing goal for %s", action_name_.c_str());
-  feedback_.curr_state = 0;
-  as_.publishFeedback(feedback_);
-
-  // approach object
-  geometry_msgs::PoseStamped target_pose = object_pose_;
-  target_pose.pose.position.z += 0.05;
-  arm_goal_.pose = target_pose;
-  ROS_INFO("Approaching object");
-  ac_move_.sendGoal(arm_goal_);
-
-  sleep(10.0);
-  // TODO: if action not complete, abort
-
-
-  // open gripper action
-  gripper_goal_.command = 1;
-  ROS_INFO("Opening Gripper");
-  ac_gripper_.sendGoal(gripper_goal_);
-
-  // publish feedback of execution
-  // TODO give better feedback
   feedback_.curr_state = 1;
   as_.publishFeedback(feedback_);
-
-  sleep(5.0);
-
-  // TODO: if action not complete, abort
-
-  // move to pose action
-  arm_goal_.pose = object_pose_;
-
-  ROS_INFO("Picking up object");
-  ac_move_.sendGoal(arm_goal_);
-
-  sleep(10.0);
-
-  // TODO: if action not complete, abort
-
-
-  //  close gripper
-  gripper_goal_.command = 0;
-  ROS_INFO("Closing Gripper");
-  ac_gripper_.sendGoal(gripper_goal_);
-
-  going = false;
-  success = true;
+  ROS_INFO("Executing goal for %s", action_name_.c_str());
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -93,8 +56,61 @@ void PlanPickAction::executeCB() {
       going = false;
     }
 
-    // TODO
-    // print status of the action running
+    if (state == 0) {
+      // approach object
+      geometry_msgs::PoseStamped target_pose = object_pose_;
+      target_pose.pose.position.z += 0.05;
+      arm_goal_.pose = target_pose;
+      ROS_INFO("Approaching object");
+      ac_move_.sendGoal(arm_goal_);
+      ac_move_.waitForResult();
+
+      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 1;
+        ROS_INFO("Approching action success");
+      } else {
+        ROS_INFO("Approching action failed: %s", ac_move_.getState().toString().c_str());
+      }
+    } else if (state == 1) {
+      // open gripper action
+      gripper_goal_.command = 1;
+      ROS_INFO("Opening Gripper");
+      ac_gripper_.sendGoal(gripper_goal_);
+      ac_gripper_.waitForResult();
+      if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 2;
+        ROS_INFO("Opening gripper action success");
+      } else {
+        ROS_INFO("Opening gripper action failed: %s", ac_gripper_.getState().toString().c_str());
+      }
+    } else if (state == 2) {
+      // move to pose action
+      arm_goal_.pose = object_pose_;
+      ROS_INFO("Making contact with object");
+      ac_move_.sendGoal(arm_goal_);
+      ac_move_.waitForResult();
+      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 3;
+        ROS_INFO("Make contact action success");
+      } else {
+        ROS_INFO("Make contact action failed: %s", ac_move_.getState().toString().c_str());
+      }
+    } else if (state == 3) {
+      //  close gripper
+      gripper_goal_.command = 0;
+      ROS_INFO("Closing Gripper");
+      ac_gripper_.sendGoal(gripper_goal_);
+      ac_gripper_.waitForResult();
+      if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 4;
+        ROS_INFO("Closing gripper action success");
+      } else {
+        ROS_INFO("Closing gripper action failed: %s", ac_gripper_.getState().toString().c_str());
+      }
+    } else if (state == 4) {
+      success = true;
+      going = false;
+    }
 
     ros::spinOnce();
     r.sleep();
