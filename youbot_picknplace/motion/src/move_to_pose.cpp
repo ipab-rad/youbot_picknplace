@@ -49,7 +49,7 @@ void MoveToPoseAction::executeCB() {
 
   // setting an action timer
   timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(60), &MoveToPoseAction::timerCB, this, true);
+  timer_ = nh_.createTimer(ros::Duration(20), &MoveToPoseAction::timerCB, this, true);
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {

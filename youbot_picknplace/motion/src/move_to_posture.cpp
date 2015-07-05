@@ -49,7 +49,7 @@ void MoveToPostureAction::executeCB() {
   moveit::planning_interface::MoveGroup group("arm_1");
 
   timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(60), &MoveToPostureAction::timerCB, this, true);
+  timer_ = nh_.createTimer(ros::Duration(20), &MoveToPostureAction::timerCB, this, true);
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
