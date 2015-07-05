@@ -7,7 +7,10 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 // Messages
-#include <motion_msgs/MoveToPoseAction.h>
+#include "motion_msgs/MoveToPoseAction.h"
+// MoveIt
+#include <moveit/move_group_interface/move_group.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 class MoveToPoseAction {
  protected:
@@ -38,13 +41,18 @@ class MoveToPoseAction {
 
  private:
   geometry_msgs::PoseStamped target_pose_;
+  geometry_msgs::PoseStamped curr_pose_;
 
   // threshold
   double distance_threshold_;
+  double distance_;
 
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
+
+  // moveit motion plan
+  move_group_interface::MoveGroup::Plan plan;
 
 
 

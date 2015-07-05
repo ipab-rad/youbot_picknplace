@@ -57,58 +57,6 @@ void MoveGripperAction::executeCB() {
 
   bool sim = gripper_pub_.getNumSubscribers() == 0;
   ROS_INFO("We are in simulation mode: %d", sim);
-  // if we are on real robot
-  if (!sim) {
-    // create trajectory message for gripper
-    brics_actuator::JointPositions command;
-
-    std::vector <brics_actuator::JointValue> gripperJointPositions;
-    gripperJointPositions.resize(2);
-    gripperJointPositions[0].joint_uri = joint_name1_;
-    gripperJointPositions[0].unit = boost::units::to_string(boost::units::si::meter);
-    gripperJointPositions[1].joint_uri = joint_name2_;
-    gripperJointPositions[1].unit = boost::units::to_string(boost::units::si::meter);
-
-    if (gripper_command_ == 1) { // open
-      gripperJointPositions[0].value = 0.0109;
-      gripperJointPositions[1].value = 0.0109;
-
-    } else { // close
-      gripperJointPositions[0].value = 0.0011;
-      gripperJointPositions[1].value = 0.0011;
-    }
-
-    command.positions = gripperJointPositions;
-    gripper_pub_.publish(command);
-  } else { // we are in simulation
-    // create trajectory message for gripper
-    trajectory_ = trajectory_msgs::JointTrajectory();
-    trajectory_.header.frame_id = "0";
-
-    // gripper joint names
-    trajectory_.joint_names.push_back(joint_name1_);
-    trajectory_.joint_names.push_back(joint_name2_);
-
-    // TODO: fix here position of points based on command
-    trajectory_pt1_ = trajectory_msgs::JointTrajectoryPoint();
-
-    if (gripper_command_ == 1) { // open
-      trajectory_pt1_.positions.push_back(0.0109);
-      trajectory_pt1_.positions.push_back(0.0109);
-    } else { // close
-      trajectory_pt1_.positions.push_back(0.0011);
-      trajectory_pt1_.positions.push_back(0.0011);
-    }
-    ros::Duration duration(1, 0);
-    trajectory_pt1_.time_from_start = duration;
-    trajectory_.points.push_back(trajectory_pt1_);
-
-    gripper_pub_sim_.publish(trajectory_);
-  }
-  // TODO: fix next lines
-  going = false;
-  success = true;
-
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -116,6 +64,58 @@ void MoveGripperAction::executeCB() {
       as_.setPreempted();
       going = false;
     }
+
+    // if we are on real robot
+    if (!sim) {
+      // create trajectory message for gripper
+      brics_actuator::JointPositions command;
+
+      std::vector <brics_actuator::JointValue> gripperJointPositions;
+      gripperJointPositions.resize(2);
+      gripperJointPositions[0].joint_uri = joint_name1_;
+      gripperJointPositions[0].unit = boost::units::to_string(boost::units::si::meter);
+      gripperJointPositions[1].joint_uri = joint_name2_;
+      gripperJointPositions[1].unit = boost::units::to_string(boost::units::si::meter);
+
+      if (gripper_command_ == 1) { // open
+        gripperJointPositions[0].value = 0.0109;
+        gripperJointPositions[1].value = 0.0109;
+
+      } else { // close
+        gripperJointPositions[0].value = 0.0011;
+        gripperJointPositions[1].value = 0.0011;
+      }
+
+      command.positions = gripperJointPositions;
+      gripper_pub_.publish(command);
+    } else { // we are in simulation
+      // create trajectory message for gripper
+      trajectory_ = trajectory_msgs::JointTrajectory();
+      trajectory_.header.frame_id = "0";
+
+      // gripper joint names
+      trajectory_.joint_names.push_back(joint_name1_);
+      trajectory_.joint_names.push_back(joint_name2_);
+
+      // TODO: fix here position of points based on command
+      trajectory_pt1_ = trajectory_msgs::JointTrajectoryPoint();
+
+      if (gripper_command_ == 1) { // open
+        trajectory_pt1_.positions.push_back(0.0109);
+        trajectory_pt1_.positions.push_back(0.0109);
+      } else { // close
+        trajectory_pt1_.positions.push_back(0.0011);
+        trajectory_pt1_.positions.push_back(0.0011);
+      }
+      ros::Duration duration(1, 0);
+      trajectory_pt1_.time_from_start = duration;
+      trajectory_.points.push_back(trajectory_pt1_);
+
+      gripper_pub_sim_.publish(trajectory_);
+    }
+
+    going = false;
+    success = true;
 
     ros::spinOnce();
     r.sleep();

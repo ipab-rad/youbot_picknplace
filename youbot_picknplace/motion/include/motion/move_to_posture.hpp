@@ -7,7 +7,10 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 // Messages
-#include <motion_msgs/MoveToPostureAction.h>
+#include "motion_msgs/MoveToPostureAction.h"
+// MoveIt
+#include <moveit/move_group_interface/move_group.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 class MoveToPostureAction {
  protected:
@@ -45,6 +48,10 @@ class MoveToPostureAction {
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
+
+  // moveit action plan
+  move_group_interface::MoveGroup::Plan plan_;
+
 
 
 

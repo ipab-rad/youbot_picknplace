@@ -1,8 +1,4 @@
 #include "motion/move_to_pose.hpp"
-#include "motion_msgs/MoveToPoseAction.h"
-
-#include <moveit/move_group_interface/move_group.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 MoveToPoseAction::MoveToPoseAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
@@ -37,6 +33,13 @@ void MoveToPoseAction::preemptCB() {
 void MoveToPoseAction::executeCB() {
   bool going = true;
   bool success = false;
+  // states:
+  // 0 initial
+  // 1 planned
+  // 2 moving
+  // 3 moved
+  int state = 0;
+
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
   feedback_.curr_state = 0;
@@ -44,36 +47,10 @@ void MoveToPoseAction::executeCB() {
   // get move it to execute motion
   moveit::planning_interface::MoveGroup group("arm_1");
 
-  if (going){
+  // setting an action timer
+  timed_out_ = false;
+  timer_ = nh_.createTimer(ros::Duration(60), &MoveToPoseAction::timerCB, this, true);
 
-    group.setJointValueTarget(target_pose_, group.getEndEffectorLink());
-    group.setGoalTolerance(0.02);
-    group.setGoalOrientationTolerance(0.02);
-    group.setPlanningTime(20.0);
-    move_group_interface::MoveGroup::Plan plan;
-    if (!group.plan(plan))
-    {
-      ROS_FATAL("Unable to create motion plan.  Aborting.");
-      success = false;
-      going = false;
-    }else{
-      ROS_INFO("Planning was successful");
-      // Publish Feedback that plan was success
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-
-      timed_out_ = false;
-      timer_ = nh_.createTimer(ros::Duration(60), &MoveToPoseAction::timerCB, this, true);
-
-      // do non-blocking move request
-      group.execute(plan);
-      // publish feedback that it is executing motion
-      feedback_.curr_state = 2;
-      as_.publishFeedback(feedback_);
-    }
-  }
-
-  
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
       ROS_INFO("%s: Preempted", action_name_.c_str());
@@ -81,25 +58,53 @@ void MoveToPoseAction::executeCB() {
       going = false;
     }
 
-    if (timed_out_){
+    if (state == 0) {
+      group.setJointValueTarget(target_pose_, group.getEndEffectorLink());
+      group.setGoalTolerance(0.02);
+      group.setGoalOrientationTolerance(0.02);
+      group.setPlanningTime(20.0);
+      if (!group.plan(plan)) {
+        ROS_FATAL("Unable to create motion plan.  Aborting.");
+        success = false;
+        going = false;
+      } else {
+        ROS_INFO("Planning was successful");
+        state = 1;
+      }
+    } else if (state == 1) {
+      // Publish Feedback that plan was success
+      feedback_.curr_state = 1;
+      as_.publishFeedback(feedback_);
+
+      // do blocking move request
+      // ATTENTION: moveit may abort but continue the motion
+      group.execute(plan);
+      // publish feedback that it is executing motion
+      feedback_.curr_state = 2;
+      as_.publishFeedback(feedback_);
+      state = 2;
+
+    } else if (state == 2) {
+      curr_pose_ = group.getCurrentPose();
+      ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x, curr_pose_.pose.position.y, curr_pose_.pose.position.z);
+      distance_ = sqrt(pow(curr_pose_.pose.position.x - target_pose_.pose.position.x, 2) +
+                       pow(curr_pose_.pose.position.y - target_pose_.pose.position.y, 2) +
+                       pow(curr_pose_.pose.position.z - target_pose_.pose.position.z, 2) );
+      ROS_INFO("Current distance to desired pose: %f", distance_);
+
+      //  TODO fix this condition as it needs to use some threshold
+      //  now it accepts any distance
+      if (distance_ < distance_threshold_) {
+        state = 3;
+        going = false;
+        success = true;
+      }
+    }
+
+    if (timed_out_) {
       ROS_INFO("%s: Timed out", action_name_.c_str());
       // TODO: set as preempted?
       going = false;
-    }
-
-
-    geometry_msgs::PoseStamped curr_pose_ = group.getCurrentPose();
-    ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x,curr_pose_.pose.position.y,curr_pose_.pose.position.z);
-    float distance = sqrt(pow(curr_pose_.pose.position.x-target_pose_.pose.position.x, 2) +
-                          pow(curr_pose_.pose.position.y-target_pose_.pose.position.y, 2) +
-                          pow(curr_pose_.pose.position.z-target_pose_.pose.position.z, 2) );
-    ROS_INFO("Current distance to desired pose: %f", distance);
-
-    //  TODO fix this condition as it needs to use some threshold
-    //  now it accepts any distance
-    if (distance < distance_threshold_){
-      going = false;
-      success = true;
     }
 
     ros::spinOnce();
