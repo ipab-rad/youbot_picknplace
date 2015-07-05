@@ -3,6 +3,7 @@ bool detect
 ---
 #result definition
 bool success
+geometry_msgs/PoseStamped pose
 ---
 #feedback
 # INITIAL=0

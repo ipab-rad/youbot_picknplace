@@ -61,6 +61,11 @@ void PlanObjectDetectionAction::executeCB() {
 
     // debug: monitor action
     // ROS_INFO("Current State: %s\n", detect_ac_.getState().toString().c_str());
+    if (detect_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      success = true;
+      going = false;
+    }
+
 
     if (timed_out_) {
       ROS_INFO("%s: Timed out", action_name_.c_str());
@@ -75,14 +80,16 @@ void PlanObjectDetectionAction::executeCB() {
   as_.publishFeedback(feedback_);
 
   if (success) {
-    result_.success = true;
+    result_.success = success;
+    result_.pose = detect_ac_.getResult()->pose;
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {
-    result_.success = false;
+    result_.success = success;
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
+
 }
 
 void PlanObjectDetectionAction::timerCB(const ros::TimerEvent& event) {
