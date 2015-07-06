@@ -73,7 +73,11 @@ void DetectObjectAction::executeCB() {
   }
 
   // TODO: fix this to get with proper uri
-  // device_manager_.getAnyDevice()->stopAllStreams();
+  // camera_device_ = device_manager_.getAnyDevice();
+  // ROS_INFO("Got camera");
+
+  // camera_device_->stopAllStreams();
+  // ROS_INFO("Stopped streams");
 }
 
 // void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {

@@ -17,7 +17,7 @@ MoveToPoseAction::~MoveToPoseAction(void) {
 }
 
 void MoveToPoseAction::init() {
-  distance_threshold_ = 0.03;
+  distance_threshold_ = 0.01;
 }
 
 void MoveToPoseAction::goalCB() {
@@ -60,8 +60,8 @@ void MoveToPoseAction::executeCB() {
 
     if (state == 0) {
       group.setJointValueTarget(target_pose_, group.getEndEffectorLink());
-      group.setGoalTolerance(0.02);
-      group.setGoalOrientationTolerance(0.02);
+      group.setGoalTolerance(distance_threshold_);
+      group.setGoalOrientationTolerance(0.05);
       group.setPlanningTime(20.0);
       if (!group.plan(plan)) {
         ROS_FATAL("Unable to create motion plan.  Aborting.");
