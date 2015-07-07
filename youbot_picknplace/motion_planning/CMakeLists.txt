@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   motion_msgs
   motion_planning_msgs
+  cmake_modules
 )
 
 
@@ -92,6 +93,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -O2")
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen REQUIRED)

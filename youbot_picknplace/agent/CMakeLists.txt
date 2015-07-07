@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
  actionlib
  roscpp
  motion_planning_msgs
+ cmake_modules
  )
 
 #######################################
