@@ -8,6 +8,7 @@
 #include "motion_planning/plan_object_detection.hpp"
 #include "motion_planning/plan_pick.hpp"
 #include "motion_planning/plan_place.hpp"
+#include "motion_planning/plan_go_home.hpp"
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion_planning");
@@ -17,6 +18,7 @@ int main(int argc, char** argv) {
   PlanObjectDetectionAction detectionPlanner(nh, "plan_detection");
   PlanPickAction pickPlanner(nh, "plan_pick");
   PlanPlaceAction placePlanner(nh, "plan_place");
+  PlanGoHomeAction goHomePlanner(nh, "plan_go_home");
 
 
   ros::spin();
