@@ -8,7 +8,7 @@ Object sensing and manipulation for youbot platform
 ```
 git clone https://github.com/ipab-rad/youbot_picknplace.git
 ```
-- youBot configuration files (except youbot_driver)
+- youBot and MoveIt related configuration files (except youbot_driver)
 ```
 git clone https://github.com/ipab-rad/rad_youbot_stack.git
 ```
@@ -16,7 +16,7 @@ git clone https://github.com/ipab-rad/rad_youbot_stack.git
 ```
 sudo apt-get install ros-hydro-cmake-modules
 ```
-- MoveIt and youbot arm kinematics plugin
+- MoveIt and youBot arm kinematics plugin
 ```
 sudo apt-get install ros-hydro-moveit-full ros-hydro-moveit-simple-controller-manager
 git clone https://github.com/svenschneider/youbot-manipulation.git
@@ -33,7 +33,7 @@ sudo apt-get install ros-hydro-object-recognition-tabletop
 ```
 sudo apt-get install libopenni-dev ros-hydro-catkin ros-hydro-ecto* ros-hydro-opencv-candidate ros-hydro-moveit-msgs
 ```
-- for simulations Gazebo
+- for simulations in Gazebo
 ```
 git clone https://github.com/mas-group/youbot_simulation.git
 ```
@@ -44,27 +44,24 @@ git clone https://github.com/mas-group/youbot_simulation.git
 - ORK Tabletop
     - add new object to DB to be detected:
    ```
- rosrun object_recognition_core object_add.py -n cube -d "A simple cube" --commit
-```
-
-    - add object mesh from file using ID returned in previous command
-```
+    rosrun object_recognition_core object_add.py -n cube -d "A simple cube" --commit
+    ```
+    - add object mesh from file using ID returned in previous command:
+    ```
     rosrun object_recognition_core mesh_add.py d399103d741b4138f935e68ba6000829 `rospack find object_recognition_tutorials`/data/cube.stl --commit
-```
-
-    - plane detection with Rviz visualization
-```
+    ```
+    - plane detection with Rviz visualization:
+    ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
     rosrun object_recognition_core detection -c `rospack find youbot_picknplace`/sensing/conf/detection.table.ros.ork
-```
-
-    -object detection with Rviz visualization
-```
+    ```
+    -object detection with Rviz visualization:
+    ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
     rosrun object_recognition_core detection -c  `rospack find youbot_picknplace`/sensing/conf/detection.object.ros.ork
-```
+    ```
 
     NOTE: more information on the usage and FAQS of the Tabletop pipeline can be found in
     http://wg-perception.github.io/ork_tutorials/tutorial02/tutorial.html
@@ -72,14 +69,14 @@ git clone https://github.com/mas-group/youbot_simulation.git
 
 - Gazebo Simulation
     ```
-roslaunch youbot_gazebo_robot youbot.launch
-```
+    roslaunch youbot_gazebo_robot youbot.launch
+    ```
 
 
 - Motion
     - MoveIt! motion execution python script
    ```
- roslaunch youbot_moveit_config move_group.launch
+    roslaunch youbot_moveit_config move_group.launch
     rosrun moveit_commander moveit_commander_cmdline.py
 ```
 
