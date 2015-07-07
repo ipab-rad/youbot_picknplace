@@ -56,7 +56,7 @@ git clone https://github.com/mas-group/youbot_simulation.git
     rosrun rviz rviz
     rosrun object_recognition_core detection -c `rospack find youbot_picknplace`/sensing/conf/detection.table.ros.ork
     ```
-    -object detection with Rviz visualization:
+    - object detection with Rviz visualization:
     ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
