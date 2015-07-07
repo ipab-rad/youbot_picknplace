@@ -12,12 +12,12 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
 
 		<!-- Launch file starting all necesarry nodes for pick and place task. Arm control, perception and youbot interface itself.
 -->
-		<arg name="robot" value="youbot" />
+		<!-- <arg name="robot" value="youbot_with_cam3d" /> -->
 		<!-- <param name="robot_description_with_cam" command="$(find xacro)/xacro.py $(find youbot_description)/robots/$(arg robot)_with_cam3d.urdf.xacro" />
     <param name="robot_description_with_cam_semantic" textfile="$(find youbot_moveit_config)/config/youbot.srdf"/> -->
 
 		<!-- launch gazebo world -->
-		<include file="$(find youbot_gazebo_robot)/launch/youbot.launch" >
+		<include file="$(find youbot_gazebo_robot)/launch/youbot_with_cam3d.launch" >
 		</include>
 		<!-- move it interface -->
     	<include file="$(find youbot_moveit_config)/launch/move_group.launch">
