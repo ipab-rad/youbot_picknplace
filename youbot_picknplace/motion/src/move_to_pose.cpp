@@ -33,6 +33,7 @@ void MoveToPoseAction::preemptCB() {
 void MoveToPoseAction::executeCB() {
   bool going = true;
   bool success = false;
+  bool moveit_success = false;
   // states:
   // 0 initial
   // 1 planned
@@ -78,7 +79,7 @@ void MoveToPoseAction::executeCB() {
 
       // do blocking move request
       // ATTENTION: moveit may abort but continue the motion
-      group.execute(plan);
+      moveit_success = group.execute(plan);
       // publish feedback that it is executing motion
       feedback_.curr_state = 2;
       as_.publishFeedback(feedback_);
@@ -100,6 +101,13 @@ void MoveToPoseAction::executeCB() {
         success = true;
       }
     }
+
+    if (moveit_success) {
+      ROS_INFO("Success moving to pose");
+      going = false;
+      success = true;
+    }
+
 
     if (timed_out_) {
       ROS_INFO("%s: Timed out", action_name_.c_str());
