@@ -6,6 +6,7 @@
 #include <motion_planning_msgs/PlanObjectDetectionAction.h>
 #include <motion_planning_msgs/PlanPlaceAction.h>
 #include <motion_planning_msgs/PlanPickAction.h>
+#include <motion_planning_msgs/PlanGoHomeAction.h>
 //tf
 #include <tf/transform_datatypes.h>
 
@@ -15,10 +16,12 @@ int main (int argc, char **argv) {
   bool done_detect = false;
   bool done_pick = false;
   bool done_place = false;
+  bool done_home = false;
   // action lib clients
   actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac("motion_planning/plan_detection", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac("motion_planning/plan_pick", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac("motion_planning/plan_place", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac("motion_planning/plan_go_home", true);
 
 
 // OBJECT DETECTION
@@ -101,6 +104,26 @@ int main (int argc, char **argv) {
   }
 
   if (done_place) {
+    // PLACE
+    ROS_INFO("Waiting for Go home server to start.");
+    // wait for the action server to start
+    home_ac.waitForServer(); //will wait for infinite time
+
+    ROS_INFO("Go Home Action server started, sending goal.");
+    // send a goal to the action
+    motion_planning_msgs::PlanGoHomeGoal home_goal;
+    home_goal.go_home = true;
+
+
+    home_ac.sendGoal(home_goal);
+    home_ac.waitForResult();
+    if (home_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      done_home = true;
+    }
+  }
+
+
+  if (done_home) {
     ROS_INFO("Task completed!");
   }
 
