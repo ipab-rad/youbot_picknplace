@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
  motion_msgs
  trajectory_msgs
  moveit_core moveit_ros_planning moveit_ros_planning_interface
+ cmake_modules
  )
 
 #######################################
