@@ -60,6 +60,7 @@ find_package(catkin REQUIRED COMPONENTS
    PlanPick.action
    PlanPlace.action
    PlanObjectDetection.action
+   PlanGoHome.action
  )
 
 ## Generate added messages and services with any dependencies listed here
