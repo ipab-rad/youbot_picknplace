@@ -64,9 +64,6 @@ void PlanPlaceAction::executeCB() {
       ac_move_.waitForResult();
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         state = 1;
-      } else {
-        going = false;
-        success = false;
       }
     } else if (state == 1) {
       // open gripper action

@@ -32,4 +32,9 @@ or enable the USE_SETCAP flag in the cmake file and recompile again.
         <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen">
         </node>
 
+        <!-- start sensing action servers -->
+        <node name="sensing" pkg="sensing" type="sensing" output="screen">
+        </node>
+
+
 </launch>
