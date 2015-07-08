@@ -117,7 +117,7 @@ void PlanPickAction::executeCB() {
       ac_move_.waitForResult();
 
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
+        state = 5;
         ROS_INFO("Moving away from object action success");
       } else {
         ROS_INFO("Moving away from object action failed: %s", ac_move_.getState().toString().c_str());
