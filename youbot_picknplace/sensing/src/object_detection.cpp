@@ -22,11 +22,12 @@ DetectObjectAction::~DetectObjectAction(void) {
 }
 
 void DetectObjectAction::init() {
+  detect_ = false;
   object_found_ = false;
 }
 
 void DetectObjectAction::goalCB() {
-  as_.acceptNewGoal();
+  detect_ = as_.acceptNewGoal()->detect;
   this->executeCB();
 }
 
@@ -50,7 +51,6 @@ void DetectObjectAction::executeCB() {
       going = false;
     }
 
-    // TODO turn off actual obj detection
     if (object_found_) {
       result_.pose = object_pose_;
       going = false;
@@ -72,70 +72,65 @@ void DetectObjectAction::executeCB() {
     as_.setAborted(result_);
   }
 
-  // TODO: fix this to get with proper uri
-  // camera_device_ = device_manager_.getAnyDevice();
-  // ROS_INFO("Got camera");
-
-  // camera_device_->stopAllStreams();
-  // ROS_INFO("Stopped streams");
 }
 
-// void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {
 void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {
   // ROS_INFO("Object message received");
 
+  // TODO uncomment line
+  // if (msg->objects.size() == 1 && detect) {
   if (msg->objects.size() == 1) {
-    // tf::StampedTransform stransform;
-    // tf::TransformListener listener;
-    // const object_recognition_msgs::RecognizedObject& object = msg->objects[0];
-    // const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
+    tf::StampedTransform stransform;
+    tf::TransformListener listener;
+    const object_recognition_msgs::RecognizedObject& object = msg->objects[0];
+    const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
 
-    // ROS_INFO("Object was recognized. Key: %s", object.type.key.c_str());
-    // try {
-    //   ROS_INFO("Object detection frame: %s", object.pose.header.frame_id.c_str());
-    //   geometry_msgs::PoseStamped pin;
-    //   pin.header.frame_id = object.pose.header.frame_id;
-    //   pin.header.stamp = ros::Time(0);
-    //   pin.pose = obj_pose;
-    //   geometry_msgs::PoseStamped pout;
+    ROS_INFO("Object was recognized. Key: %s", object.type.key.c_str());
+    try {
+      ROS_INFO("Object detection frame: %s", object.pose.header.frame_id.c_str());
+      geometry_msgs::PoseStamped pin;
+      pin.header.frame_id = object.pose.header.frame_id;
+      pin.header.stamp = ros::Time(0);
+      pin.pose = obj_pose;
+      geometry_msgs::PoseStamped pout;
 
-    //   listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-    //   ROS_INFO("Received transform to robot base");
-    //   listener.transformPose("/base_footprint", pin, pout);
-    //   ROS_INFO("Transformed pose into robot's frame");
+      listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+      ROS_INFO("Received transform to robot base");
+      listener.transformPose("/base_footprint", pin, pout);
+      ROS_INFO("Transformed pose into robot's frame");
 
-    //   // DEBUG
-    //   // listener.lookupTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), stransform);
-    //   // ROS_INFO("Computed transform to /base_footprint, Point (x,y,z): (%f,%f,%f)", stransform.getOrigin().x(), stransform.getOrigin().y(), stransform.getOrigin().z());
-    //   ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+      // DEBUG
+      // listener.lookupTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), stransform);
+      // ROS_INFO("Computed transform to /base_footprint, Point (x,y,z): (%f,%f,%f)", stransform.getOrigin().x(), stransform.getOrigin().y(), stransform.getOrigin().z());
+      ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.z, pout.pose.position.y);
 
-    //   // TODO
-    //   // ATTENTION: it seems coordinates z-y are flipped, so modify it
-    //   object_pose_ = pout;
-    //   object_found_ = true;
+      // TODO
+      // ATTENTION: it seems coordinates z-y are flipped, so modify it
+      object_pose_ = pout;
+      object_found_ = true;
 
 
-    // } catch (tf::TransformException ex) {
-    //   ROS_ERROR("%s", ex.what());
-    //   ros::Duration(1.0).sleep();
-    // }
+    } catch (tf::TransformException ex) {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+    }
 
 
     // TEST
-    geometry_msgs::PoseStamped target_pose;
-    target_pose.header.frame_id = "base_footprint";
-    geometry_msgs::Quaternion quat;
-    quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
-    target_pose.pose.orientation.x = quat.x;
-    target_pose.pose.orientation.y = quat.y;
-    target_pose.pose.orientation.z = quat.z;
-    target_pose.pose.orientation.w = quat.w;
-    ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-    target_pose.pose.position.x = 0.1;
-    target_pose.pose.position.y = -0.3;
-    target_pose.pose.position.z = 0.02;
-    object_pose_ = target_pose;
-    object_found_ = true;
+    // geometry_msgs::PoseStamped target_pose;
+    // target_pose.header.frame_id = "base_footprint";
+    // geometry_msgs::Quaternion quat;
+    // quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
+    // target_pose.pose.orientation.x = quat.x;
+    // target_pose.pose.orientation.y = quat.y;
+    // target_pose.pose.orientation.z = quat.z;
+    // target_pose.pose.orientation.w = quat.w;
+    // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
+    // target_pose.pose.position.x = 0.1;
+    // target_pose.pose.position.y = -0.3;
+    // target_pose.pose.position.z = 0.02;
+    // object_pose_ = target_pose;
+    // object_found_ = true;
 
   }
 }

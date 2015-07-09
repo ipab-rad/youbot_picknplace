@@ -44,12 +44,8 @@ class DetectObjectAction {
   void detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg);
 
  private:
-  // camera device
-  openni2_wrapper::OpenNI2DeviceManager device_manager_;
-  boost::shared_ptr<openni2_wrapper::OpenNI2Device> camera_device_;
-
-
   geometry_msgs::PoseStamped object_pose_;
+  bool detect_;
 
   // object detection
   ros::Subscriber object_sub_ ;
