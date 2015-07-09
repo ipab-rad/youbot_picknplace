@@ -9,6 +9,8 @@ PlanPickAction::PlanPickAction(ros::NodeHandle nh, std::string name) :
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&PlanPickAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlanPickAction::preemptCB, this));
+  // start gripper pose service client
+  pose_c_ = nh_.serviceClient<motion_msgs::GripperPose>("motion/gripper_pose");
 
   this->init();
   ROS_INFO("Starting PlanPick server");
@@ -49,6 +51,23 @@ void PlanPickAction::executeCB() {
   as_.publishFeedback(feedback_);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
+  // target pose declaration
+  geometry_msgs::PoseStamped target_pose = object_pose_;
+
+  // get gripper pose to grasp object based on obj position
+  motion_msgs::GripperPose srv;
+  srv.request.position = object_pose_.pose.position;
+  if (pose_c_.call(srv))
+  {
+    ROS_INFO("Received orientation from GripperPose");
+    target_pose.pose.orientation = srv.response.orientation;
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service GripperPose");
+    going = false;
+  }
+
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
       ROS_INFO("%s: Preempted", action_name_.c_str());
@@ -57,8 +76,7 @@ void PlanPickAction::executeCB() {
     }
 
     if (state == 0) {
-      // approach object
-      geometry_msgs::PoseStamped target_pose = object_pose_;
+      // approach object 
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
       ROS_INFO("Approaching object");
@@ -85,7 +103,8 @@ void PlanPickAction::executeCB() {
       }
     } else if (state == 2) {
       // move to pose action
-      arm_goal_.pose = object_pose_;
+      target_pose.pose.position.z -= 0.05;
+      arm_goal_.pose = target_pose;
       ROS_INFO("Making contact with object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();
@@ -109,7 +128,6 @@ void PlanPickAction::executeCB() {
       }
     } else if (state == 4) {
       // moving away object
-      geometry_msgs::PoseStamped target_pose = object_pose_;
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
       ROS_INFO("Moving away from object");
@@ -143,8 +161,4 @@ void PlanPickAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
-}
-
-void PlanPickAction::timerCB(const ros::TimerEvent& event) {
-  timed_out_ = true;
 }

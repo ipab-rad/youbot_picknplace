@@ -11,6 +11,7 @@
 #include <motion_planning_msgs/PlanPickAction.h>
 #include <motion_msgs/MoveToPoseAction.h>
 #include <motion_msgs/MoveGripperAction.h>
+#include <motion_msgs/GripperPose.h>
 
 class PlanPickAction {
  protected:
@@ -36,26 +37,18 @@ class PlanPickAction {
 
   void executeCB();
 
-  void timerCB(const ros::TimerEvent& event);
-
-
  private:
   // action client to execute pick movement
   actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_move_;
 
+  // gripper server
+  ros::ServiceClient pose_c_;
 
 
   geometry_msgs::PoseStamped object_pose_;
   motion_msgs::MoveToPoseGoal arm_goal_;
   motion_msgs::MoveGripperGoal gripper_goal_;
-
-
-  // timer for action timeout
-  ros::Timer timer_;
-  bool timed_out_;
-
-
 
 };
 
