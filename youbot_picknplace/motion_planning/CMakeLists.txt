@@ -136,7 +136,7 @@ add_executable(plan_go_home_client
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion_planning motion_msgs motion_planning_msgs)
 add_dependencies(plan_detection_client motion_planning_msgs)
-add_dependencies(plan_pick_client motion_planning_msgs)
+add_dependencies(plan_pick_client motion_msgs motion_planning_msgs)
 add_dependencies(plan_place_client motion_planning_msgs)
 add_dependencies(plan_go_home_client motion_planning_msgs)
 

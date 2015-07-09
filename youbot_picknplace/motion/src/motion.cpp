@@ -7,7 +7,7 @@
 
 #include "motion/move_to_pose.hpp"
 #include "motion/move_to_posture.hpp"
-// #include "motion/move_gripper.hpp"
+#include "motion/gripper_pose.hpp"
 
 
 int main(int argc, char** argv) {
@@ -17,9 +17,9 @@ int main(int argc, char** argv) {
   spinner.start();
 
   ROS_INFO("Running Motion");
-  MoveToPoseAction movetopose(nh, "move_to_pose");
-  MoveToPostureAction movetoposture(nh, "move_to_posture");
-  // MoveGripperAction movegripper(nh, "move_gripper");
+  MoveToPoseAction moveToPose(nh, "move_to_pose");
+  MoveToPostureAction moveToPosture(nh, "move_to_posture");
+  GripperPose gripperPose(nh, "gripper_pose");
 
 
   ros::spin();
