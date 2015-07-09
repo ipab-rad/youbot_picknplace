@@ -77,9 +77,7 @@ void DetectObjectAction::executeCB() {
 void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {
   // ROS_INFO("Object message received");
 
-  // TODO uncomment line
-  // if (msg->objects.size() == 1 && detect) {
-  if (msg->objects.size() == 1) {
+  if (msg->objects.size() == 1 && detect_) {
     tf::StampedTransform stransform;
     tf::TransformListener listener;
     const object_recognition_msgs::RecognizedObject& object = msg->objects[0];
@@ -98,14 +96,8 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
       ROS_INFO("Received transform to robot base");
       listener.transformPose("/base_footprint", pin, pout);
       ROS_INFO("Transformed pose into robot's frame");
+      ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
 
-      // DEBUG
-      // listener.lookupTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), stransform);
-      // ROS_INFO("Computed transform to /base_footprint, Point (x,y,z): (%f,%f,%f)", stransform.getOrigin().x(), stransform.getOrigin().y(), stransform.getOrigin().z());
-      ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.z, pout.pose.position.y);
-
-      // TODO
-      // ATTENTION: it seems coordinates z-y are flipped, so modify it
       object_pose_ = pout;
       object_found_ = true;
 
@@ -114,7 +106,6 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
       ROS_ERROR("%s", ex.what());
       ros::Duration(1.0).sleep();
     }
-
 
     // TEST
     // geometry_msgs::PoseStamped target_pose;
