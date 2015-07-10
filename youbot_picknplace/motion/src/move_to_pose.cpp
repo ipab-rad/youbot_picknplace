@@ -60,9 +60,10 @@ void MoveToPoseAction::executeCB() {
     }
 
     if (state == 0) {
-      group.setJointValueTarget(target_pose_, group.getEndEffectorLink());
+      target_pose_.pose.orientation = group.getCurrentPose().pose.orientation;
+      group.setPoseTarget(target_pose_, group.getEndEffectorLink());
       group.setGoalTolerance(distance_threshold_);
-      group.setGoalOrientationTolerance(0.05);
+      group.setGoalOrientationTolerance(0.2);
       group.setPlanningTime(20.0);
       if (!group.plan(plan)) {
         ROS_FATAL("Unable to create motion plan.  Aborting.");
