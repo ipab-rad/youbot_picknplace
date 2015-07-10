@@ -35,6 +35,7 @@ void MoveToPostureAction::executeCB() {
   bool going = true;
   bool success = false;
   bool moveit_success = false;
+  timed_out_ = false;
   // states:
   // 0 initial
   // 1 planned
@@ -48,9 +49,6 @@ void MoveToPostureAction::executeCB() {
   as_.publishFeedback(feedback_);
   // get move it to execute motion
   moveit::planning_interface::MoveGroup group("arm_1");
-
-  timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(20), &MoveToPostureAction::timerCB, this, true);
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -81,10 +79,10 @@ void MoveToPostureAction::executeCB() {
       feedback_.curr_state = 2;
       as_.publishFeedback(feedback_);
       state = 2;
+      timed_out_ = false;
+      timer_ = nh_.createTimer(ros::Duration(30), &MoveToPostureAction::timerCB, this, true);
     } else if (state == 2) {
       // TODO: fix next lines
-      sleep(10.0);
-      going = false;
       success = true;
     }
 
