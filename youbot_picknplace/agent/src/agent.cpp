@@ -104,27 +104,34 @@ int main (int argc, char **argv) {
   }
 
   if (done_place) {
-    // PLACE
-    ROS_INFO("Waiting for Go home server to start.");
-    // wait for the action server to start
-    home_ac.waitForServer(); //will wait for infinite time
+    ROS_INFO("Task successful!");
+  } else {
+    ROS_INFO("Task failed!");
+  }
 
-    ROS_INFO("Go Home Action server started, sending goal.");
-    // send a goal to the action
-    motion_planning_msgs::PlanGoHomeGoal home_goal;
-    home_goal.go_home = true;
+  // PLACE
+  ROS_INFO("Waiting for Go home server to start.");
+  // wait for the action server to start
+  home_ac.waitForServer(); //will wait for infinite time
+
+  ROS_INFO("Go Home Action server started, sending goal.");
+  ROS_INFO("Goint to home pose");
+  // send a goal to the action
+  motion_planning_msgs::PlanGoHomeGoal home_goal;
+  home_goal.go_home = true;
 
 
-    home_ac.sendGoal(home_goal);
-    home_ac.waitForResult();
-    if (home_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      done_home = true;
-    }
+  home_ac.sendGoal(home_goal);
+  home_ac.waitForResult();
+  if (home_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+    done_home = true;
   }
 
 
   if (done_home) {
-    ROS_INFO("Task completed!");
+    ROS_INFO("Done!");
+  } else {
+    ROS_INFO("Failed going to home positon");
   }
 
   //exit
