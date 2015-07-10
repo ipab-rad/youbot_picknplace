@@ -10,6 +10,8 @@
 // Messages
 #include "sensing_msgs/DetectObjectAction.h"
 #include "motion_planning_msgs/PlanObjectDetectionAction.h"
+#include "motion_msgs/MoveToPostureAction.h"
+
 
 class PlanObjectDetectionAction {
  protected:
@@ -43,6 +45,10 @@ class PlanObjectDetectionAction {
   bool detect_;
   // detect action client
   actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> detect_ac_;
+  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_;
+
+  // message goals
+  motion_msgs::MoveToPostureGoal posture_goal_;
 
 
   // timer for action timeout

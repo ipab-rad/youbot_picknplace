@@ -34,6 +34,7 @@ void MoveToPostureAction::preemptCB() {
 void MoveToPostureAction::executeCB() {
   bool going = true;
   bool success = false;
+  bool moveit_success = false;
   // states:
   // 0 initial
   // 1 planned
@@ -74,13 +75,20 @@ void MoveToPostureAction::executeCB() {
       }
     } else if (state == 1) {
       // do blocking move request
-      group.execute(plan_);
+      // ATTENTION: in simulation moveit may abort but continue the motion
+      moveit_success = group.execute(plan_);
       // publish feedback that it is executing motion
       feedback_.curr_state = 2;
       as_.publishFeedback(feedback_);
       state = 2;
     } else if (state == 2) {
       // TODO: fix next lines
+      sleep(10.0);
+      going = false;
+      success = true;
+    }
+
+    if (moveit_success) {
       going = false;
       success = true;
     }

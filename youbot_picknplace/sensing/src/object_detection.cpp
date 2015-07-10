@@ -37,7 +37,7 @@ void DetectObjectAction::preemptCB() {
 }
 
 void DetectObjectAction::executeCB() {
-  bool going = true;
+  bool going = detect_;
   bool success = false;
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
