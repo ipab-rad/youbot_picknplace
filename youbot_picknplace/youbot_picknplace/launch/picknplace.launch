@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<!--
+This launch file starts a series of nodes for the Picknplace project.
+
+-->
+
+<launch>
+
+    <!-- motion action servers -->
+    <node name="motion" pkg="motion" type="motion" output="screen" />
+    <node name="gripper_motion" pkg="motion" type="gripper_motion" output="screen" />
+
+    <!-- motion planning action servers -->
+    <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen" />
+
+    <!-- start sensing action servers -->
+    <node name="sensing" pkg="sensing" type="sensing" output="screen" />
+
+    <!-- launch gazebo world -->
+    <!-- <include file="$(find youbot_picknplace)/launch/camera.launch" /> -->
+
+</launch>

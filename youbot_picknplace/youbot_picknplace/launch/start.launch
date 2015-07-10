@@ -1,51 +1,19 @@
 <?xml version="1.0"?>
 
 <!--
-This launch file starts a series of nodes for the Edante project.
+This launch file starts the youBot driver and the robot joint state publisher. MoveIt group is also launched.
 
-If you receive an error message that contains "Excecute as root"
-then go to the bin folder and execute: sudo setcap cap_net_raw+ep
-or enable the USE_SETCAP flag in the cmake file and recompile again.
 -->
 
 <launch>
 
-		<!-- Launch file starting all necesarry nodes for pick and place task. Arm control, perception and youbot interface itself.
--->
-
 	 	<!-- robot publishers -->
 		<include file="$(find youbot_driver_ros_interface)/launch/youbot_driver.launch" />
-    	<include file="$(find youbot_driver_ros_interface)/launch/youbot_joint_state_publisher.launch" />
+    <include file="$(find youbot_driver_ros_interface)/launch/youbot_joint_state_publisher.launch" />
 
 		<!-- move it interface -->
-    	<include file="$(find youbot_moveit_config)/launch/move_group.launch">
-  			<arg name="publish_monitored_planning_scene" value="true" />
+    <include file="$(find youbot_moveit_config)/launch/move_group.launch">
+  		<arg name="publish_monitored_planning_scene" value="true" />
  		</include>
 
- 		<!-- motion action servers -->
-		<node name="motion" pkg="motion" type="motion" output="screen">
-        </node>
-        <node name="gripper_motion" pkg="motion" type="gripper_motion" output="screen">
-        </node>
-
-        <!-- motion planning action servers -->
-        <node name="motion_planning" pkg="motion_planning" type="motion_planning" output="screen">
-        </node>
-
-        <!-- start sensing action servers -->
-        <node name="sensing" pkg="sensing" type="sensing" output="screen">
-        </node>
-
-            <!-- start xtion -->
-        <include file="$(find openni2_launch)/launch/openni2.launch">
-          <arg name="camera" value="arm_cam3d" />
-          <arg name="rgb_frame_id"   value="arm_cam3d_rgb_optical_frame" />
-          <arg name="depth_frame_id" value="arm_cam3d_depth_optical_frame" />
-          <arg name="depth_registration" value="true" />
-          <arg name="publish_tf" value="true" />
-        </include>
-
-        
-
-        
 </launch>
