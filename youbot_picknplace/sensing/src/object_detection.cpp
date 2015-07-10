@@ -101,6 +101,8 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
       object_pose_ = pout;
       object_found_ = true;
 
+      detect_ = false;
+
 
     } catch (tf::TransformException ex) {
       ROS_ERROR("%s", ex.what());
