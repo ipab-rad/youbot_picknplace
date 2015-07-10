@@ -10,6 +10,7 @@
 // Messages
 #include <motion_planning_msgs/PlanPickAction.h>
 #include <motion_msgs/MoveToPoseAction.h>
+#include <motion_msgs/MoveToPostureAction.h>
 #include <motion_msgs/MoveGripperAction.h>
 
 class PlanPickAction {
@@ -40,6 +41,7 @@ class PlanPickAction {
   // action client to execute pick movement
   actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_move_;
+  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_posture_;
 
   // gripper server
   ros::ServiceClient pose_c_;
@@ -48,6 +50,7 @@ class PlanPickAction {
   geometry_msgs::PoseStamped object_pose_;
   motion_msgs::MoveToPoseGoal arm_goal_;
   motion_msgs::MoveGripperGoal gripper_goal_;
+  motion_msgs::MoveToPostureGoal arm_posture_goal_;
 
 };
 

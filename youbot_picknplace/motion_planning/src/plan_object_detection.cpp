@@ -77,7 +77,6 @@ void PlanObjectDetectionAction::executeCB() {
         // start timer
         timed_out_ = false;
         timer_ = nh_.createTimer(ros::Duration(20), &PlanObjectDetectionAction::timerCB, this, true);
-
       }
     } else if (state == 1 && !detect_) {
       // send a movement to pose goal to the action client
@@ -136,15 +135,16 @@ void PlanObjectDetectionAction::executeCB() {
 
     if (timed_out_) {
       detect_ = false;
+      // send a goal to the obj detection action
+      sensing_msgs::DetectObjectGoal detect_goal;
+      detect_goal.detect = false;
+      detect_ac_.sendGoal(detect_goal);
 
       if (state == 2) {
         ROS_INFO("%s: Timed out", action_name_.c_str());
         // terminate
         going = false;
-        // send a goal to the obj detection action
-        sensing_msgs::DetectObjectGoal detect_goal;
-        detect_goal.detect = false;
-        detect_ac_.sendGoal(detect_goal);
+
       } else
         state++;
     }

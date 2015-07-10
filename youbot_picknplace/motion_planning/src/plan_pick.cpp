@@ -5,7 +5,8 @@ PlanPickAction::PlanPickAction(ros::NodeHandle nh, std::string name) :
   as_(nh_, name, false),
   action_name_(name),
   ac_gripper_("gripper_motion/move_gripper", true),
-  ac_move_("motion/move_to_pose", true) {
+  ac_move_("motion/move_to_pose", true),
+  ac_move_posture_("motion/move_to_posture", true)  {
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&PlanPickAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlanPickAction::preemptCB, this));
@@ -49,8 +50,17 @@ void PlanPickAction::executeCB() {
   as_.publishFeedback(feedback_);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
-  // target pose declaration
-  geometry_msgs::PoseStamped target_pose = object_pose_;
+  int direction = -1;
+  if (object_pose_.pose.position.x > 0.2) {
+    // face forward
+    direction = 2;
+  } else if (object_pose_.pose.position.y > 0.0) {
+    // face left
+    direction = 1;
+  } else {
+    // face right
+    direction = 3;
+  }
 
   // TODO: determine end-effector orientation
 
@@ -63,7 +73,33 @@ void PlanPickAction::executeCB() {
     }
 
     if (state == 0) {
+      // initial base alignment
+      if (direction == 1)
+        arm_posture_goal_.posture = "l_pre_grasp";
+      else if (direction == 2)
+        arm_posture_goal_.posture = "f_pre_grasp";
+      else
+        arm_posture_goal_.posture = "r_pre_grasp";
+
+      // move to pose action
+      ac_move_posture_.waitForServer();
+      ROS_INFO("Initial Alignment");
+
+      ac_move_posture_.sendGoal(arm_posture_goal_);
+      feedback_.curr_state = 1;
+      as_.publishFeedback(feedback_);
+      ac_move_posture_.waitForResult();
+      if (ac_move_posture_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 1;
+      }
+    } else if (state == 1) {
+      // target pose declaration
+      geometry_msgs::PoseStamped target_pose;
+
       // approach object
+      target_pose.header.frame_id = "/base_footprint";
+      target_pose.header.stamp = ros::Time(0);
+      target_pose.pose.position = object_pose_.pose.position;
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
       ROS_INFO("Approaching object");
@@ -71,50 +107,59 @@ void PlanPickAction::executeCB() {
       ac_move_.waitForResult();
 
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
+        state = 2;
         ROS_INFO("Approching action success");
       } else {
         ROS_INFO("Approching action failed: %s", ac_move_.getState().toString().c_str());
+        going = false;
       }
-    } else if (state == 1) {
+    } else if (state == 2) {
       // open gripper action
       gripper_goal_.command = 1;
       ROS_INFO("Opening Gripper");
       ac_gripper_.sendGoal(gripper_goal_);
       ac_gripper_.waitForResult();
       if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 2;
+        state = 3;
         ROS_INFO("Opening gripper action success");
       } else {
         ROS_INFO("Opening gripper action failed: %s", ac_gripper_.getState().toString().c_str());
       }
-    } else if (state == 2) {
+    } else if (state == 3) {
       // move to pose action
-      target_pose.pose.position.z -= 0.05;
+      geometry_msgs::PoseStamped target_pose;
+      target_pose.header.frame_id = "/base_footprint";
+      target_pose.header.stamp = ros::Time(0);
+      target_pose.pose.position = object_pose_.pose.position;
       arm_goal_.pose = target_pose;
       ROS_INFO("Making contact with object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 3;
+        state = 4;
         ROS_INFO("Make contact action success");
       } else {
         ROS_INFO("Make contact action failed: %s", ac_move_.getState().toString().c_str());
+        going = false;
       }
-    } else if (state == 3) {
+    } else if (state == 4) {
       // close gripper
       gripper_goal_.command = 0;
       ROS_INFO("Closing Gripper");
       ac_gripper_.sendGoal(gripper_goal_);
       ac_gripper_.waitForResult();
       if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 4;
+        state = 5;
         ROS_INFO("Closing gripper action success");
       } else {
         ROS_INFO("Closing gripper action failed: %s", ac_gripper_.getState().toString().c_str());
       }
-    } else if (state == 4) {
+    } else if (state == 5) {
       // moving away object
+      geometry_msgs::PoseStamped target_pose;
+      target_pose.header.frame_id = "/base_footprint";
+      target_pose.header.stamp = ros::Time(0);
+      target_pose.pose.position = object_pose_.pose.position;
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
       ROS_INFO("Moving away from object");
@@ -122,12 +167,12 @@ void PlanPickAction::executeCB() {
       ac_move_.waitForResult();
 
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 5;
+        state = 6;
         ROS_INFO("Moving away from object action success");
       } else {
         ROS_INFO("Moving away from object action failed: %s", ac_move_.getState().toString().c_str());
       }
-    } else if (state == 5) {
+    } else if (state == 6) {
       success = true;
       going = false;
     }

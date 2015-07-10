@@ -10,6 +10,10 @@
 int main (int argc, char **argv) {
   ros::init(argc, argv, "test_planpick");
   ros::NodeHandle n;
+
+  if ( argc != 4)
+    return 0;
+
   // create the action client
   // true causes the client to spin its own thread
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> ac("motion_planning/plan_pick", true);
@@ -31,19 +35,16 @@ int main (int argc, char **argv) {
   // target_pose.pose.orientation.z = quat.z;
   // target_pose.pose.orientation.w = quat.w;
   // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-  target_pose.pose.position.x = 0.12;
-  target_pose.pose.position.y = -0.25;
-  target_pose.pose.position.z = 0.02;
+  target_pose.pose.position.x = atof(argv[1]);
+  target_pose.pose.position.y = atof(argv[2]);
+  target_pose.pose.position.z = atof(argv[3]);
 
   motion_msgs::GripperPose srv;
   srv.request.position = target_pose.pose.position;
-  if (pose_c.call(srv))
-  {
+  if (pose_c.call(srv)) {
     ROS_INFO("Received orientation from GripperPose");
     target_pose.pose.orientation = srv.response.orientation;
-  }
-  else
-  {
+  } else {
     ROS_ERROR("Failed to call service GripperPose");
     return 1;
   }
