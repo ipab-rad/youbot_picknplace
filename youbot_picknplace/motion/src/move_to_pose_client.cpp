@@ -3,11 +3,10 @@
 #include <actionlib/client/terminal_state.h>
 #include <motion_msgs/MoveToPoseAction.h>
 
- //tf
+//tf
 #include <tf/transform_datatypes.h>
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
   ros::init(argc, argv, "test_movetopose");
 
   // create the action client
@@ -24,15 +23,15 @@ int main (int argc, char **argv)
   geometry_msgs::PoseStamped target_pose;
   target_pose.header.frame_id = "base_footprint";
   geometry_msgs::Quaternion quat;
-  quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129,0.0549,1.686);
+  quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
   target_pose.pose.orientation.x = quat.x;
   target_pose.pose.orientation.y = quat.y;
   target_pose.pose.orientation.z = quat.z;
   target_pose.pose.orientation.w = quat.w;
   ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-  target_pose.pose.position.x = 0.12;
-  target_pose.pose.position.y = -0.15;
-  target_pose.pose.position.z = 0.21;
+  target_pose.pose.position.x = 0.1;
+  target_pose.pose.position.y = -0.3;
+  target_pose.pose.position.z = 0.02;
   goal.pose = target_pose;
 
 

@@ -11,7 +11,6 @@
 #include <motion_planning_msgs/PlanPickAction.h>
 #include <motion_msgs/MoveToPoseAction.h>
 #include <motion_msgs/MoveGripperAction.h>
-#include <motion_msgs/GripperPose.h>
 
 class PlanPickAction {
  protected:

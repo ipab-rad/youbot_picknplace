@@ -86,59 +86,57 @@ void MoveToPoseAction::executeCB() {
       state = 2;
       ROS_INFO("Waiting to reach desired position...");
 
+    } else if (state == 2) {
+      curr_pose_ = group.getCurrentPose();
+      // ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x, curr_pose_.pose.position.y, curr_pose_.pose.position.z);
+      distance_ = sqrt(pow(curr_pose_.pose.position.x - target_pose_.pose.position.x, 2) +
+                       pow(curr_pose_.pose.position.y - target_pose_.pose.position.y, 2) +
+                       pow(curr_pose_.pose.position.z - target_pose_.pose.position.z, 2) );
+      // ROS_INFO("Current distance to desired pose: %f", distance_);
+
+      //  TODO fix this condition as it needs to use some threshold
+      //  now it accepts any distance
+      if (distance_ < distance_threshold_) {
+        state = 3;
+        going = false;
+        success = true;
+      }
     }
 
-  } else if (state == 2) {
-    curr_pose_ = group.getCurrentPose();
-    // ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x, curr_pose_.pose.position.y, curr_pose_.pose.position.z);
-    distance_ = sqrt(pow(curr_pose_.pose.position.x - target_pose_.pose.position.x, 2) +
-                     pow(curr_pose_.pose.position.y - target_pose_.pose.position.y, 2) +
-                     pow(curr_pose_.pose.position.z - target_pose_.pose.position.z, 2) );
-    // ROS_INFO("Current distance to desired pose: %f", distance_);
-
-    //  TODO fix this condition as it needs to use some threshold
-    //  now it accepts any distance
-    if (distance_ < distance_threshold_) {
-      state = 3;
+    if (moveit_success) {
+      ROS_INFO("Success moving to pose");
       going = false;
       success = true;
     }
+
+
+    if (timed_out_) {
+      ROS_INFO("%s: Timed out", action_name_.c_str());
+      // TODO: set as preempted?
+      going = false;
+    }
+
+    ros::spinOnce();
+    r.sleep();
   }
+  ROS_INFO("TARGET POSE: x:%f y:%f z:%f", target_pose_.pose.position.x, target_pose_.pose.position.y, target_pose_.pose.position.z);
+  ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x, curr_pose_.pose.position.y, curr_pose_.pose.position.z);
+  distance_ = sqrt(pow(curr_pose_.pose.position.x - target_pose_.pose.position.x, 2) +
+                   pow(curr_pose_.pose.position.y - target_pose_.pose.position.y, 2) +
+                   pow(curr_pose_.pose.position.z - target_pose_.pose.position.z, 2) );
+  ROS_INFO("Current distance to desired pose: %f", distance_);
+  feedback_.curr_state = 3;
+  as_.publishFeedback(feedback_);
 
-  if (moveit_success) {
-    ROS_INFO("Success moving to pose");
-    going = false;
-    success = true;
+  if (success) {
+    result_.success = true;
+    ROS_INFO("%s: Succeeded!", action_name_.c_str());
+    as_.setSucceeded(result_);
+  } else {
+    result_.success = false;
+    ROS_INFO("%s: Failed!", action_name_.c_str());
+    as_.setAborted(result_);
   }
-
-
-  if (timed_out_) {
-    ROS_INFO("%s: Timed out", action_name_.c_str());
-    // TODO: set as preempted?
-    going = false;
-  }
-
-  ros::spinOnce();
-  r.sleep();
-}
-ROS_INFO("TARGET POSE: x:%f y:%f z:%f", target_pose_.pose.position.x, target_pose_.pose.position.y, target_pose_.pose.position.z);
-ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x, curr_pose_.pose.position.y, curr_pose_.pose.position.z);
-distance_ = sqrt(pow(curr_pose_.pose.position.x - target_pose_.pose.position.x, 2) +
-                 pow(curr_pose_.pose.position.y - target_pose_.pose.position.y, 2) +
-                 pow(curr_pose_.pose.position.z - target_pose_.pose.position.z, 2) );
-ROS_INFO("Current distance to desired pose: %f", distance_);
-feedback_.curr_state = 3;
-as_.publishFeedback(feedback_);
-
-if (success) {
-  result_.success = true;
-  ROS_INFO("%s: Succeeded!", action_name_.c_str());
-  as_.setSucceeded(result_);
-} else {
-  result_.success = false;
-  ROS_INFO("%s: Failed!", action_name_.c_str());
-  as_.setAborted(result_);
-}
 }
 
 void MoveToPoseAction::timerCB(const ros::TimerEvent& event) {
