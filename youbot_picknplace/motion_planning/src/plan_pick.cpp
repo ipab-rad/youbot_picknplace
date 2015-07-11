@@ -61,8 +61,13 @@ void PlanPickAction::executeCB() {
     // face right
     direction = 3;
   }
-
-  // TODO: determine end-effector orientation
+  geometry_msgs::PoseStamped gripper_pose = computeGripperGraspPose(object_pose_.pose);
+  // Safety guard for never attempting to reach below the ground
+  if (gripper_pose.pose.position.z < 0.02) {
+    ROS_INFO("Attempting to reach below the ground with z-coord: %f", gripper_pose.pose.position.z);
+    ROS_INFO("Assuming z=0.02 for safety");
+    gripper_pose.pose.position.z = 0.02;
+  }
 
 
   while (going) {
@@ -94,12 +99,9 @@ void PlanPickAction::executeCB() {
       }
     } else if (state == 1) {
       // target pose declaration
-      geometry_msgs::PoseStamped target_pose;
+      geometry_msgs::PoseStamped target_pose = gripper_pose;
 
       // approach object
-      target_pose.header.frame_id = "/base_footprint";
-      target_pose.header.stamp = ros::Time(0);
-      target_pose.pose.position = object_pose_.pose.position;
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
       ROS_INFO("Approaching object");
@@ -127,11 +129,7 @@ void PlanPickAction::executeCB() {
       }
     } else if (state == 3) {
       // move to pose action
-      geometry_msgs::PoseStamped target_pose;
-      target_pose.header.frame_id = "/base_footprint";
-      target_pose.header.stamp = ros::Time(0);
-      target_pose.pose.position = object_pose_.pose.position;
-      arm_goal_.pose = target_pose;
+      arm_goal_.pose = gripper_pose;
       ROS_INFO("Making contact with object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();
@@ -156,10 +154,7 @@ void PlanPickAction::executeCB() {
       }
     } else if (state == 5) {
       // moving away object
-      geometry_msgs::PoseStamped target_pose;
-      target_pose.header.frame_id = "/base_footprint";
-      target_pose.header.stamp = ros::Time(0);
-      target_pose.pose.position = object_pose_.pose.position;
+      geometry_msgs::PoseStamped target_pose = gripper_pose;
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
       ROS_INFO("Moving away from object");
@@ -193,4 +188,31 @@ void PlanPickAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
+}
+
+geometry_msgs::PoseStamped computeGripperGraspPose(geometry_msgs::Pose pose) {
+  geometry_msgs::PoseStamped target_pose;
+  // msg header
+  target_pose.header.frame_id = "/base_footprint";
+  target_pose.header.stamp = ros::Time(0);
+  // object position
+  geometry_msgs::Point pt = pose.position;
+  target_pose.pose.position = pt;
+
+  // orientation
+  tf::Matrix3x3 mat(tf::Quaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w));
+  double roll; double pitch; double yaw;
+  mat.getRPY(roll, pitch, yaw);
+  ROS_INFO("Cube RPY orientation in robot's frame: (%f,%f,%f)", roll, pitch, yaw);
+
+  double offset = 1.57;
+  if (pt.x > 0.3) // front
+    yaw += offset;
+  else // sides
+    yaw -= offset;
+
+  // fixed numbers due
+  target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(3.14, 0.0, yaw);
+
+  return target_pose;
 }

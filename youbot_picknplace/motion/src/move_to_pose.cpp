@@ -60,7 +60,6 @@ void MoveToPoseAction::executeCB() {
     }
 
     if (state == 0) {
-      target_pose_.pose.orientation = group.getCurrentPose().pose.orientation;
       group.setPoseTarget(target_pose_, group.getEndEffectorLink());
       group.setGoalTolerance(distance_threshold_);
       group.setGoalOrientationTolerance(0.2);

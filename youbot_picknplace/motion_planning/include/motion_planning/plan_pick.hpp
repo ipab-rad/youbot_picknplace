@@ -13,6 +13,10 @@
 #include <motion_msgs/MoveToPostureAction.h>
 #include <motion_msgs/MoveGripperAction.h>
 
+// tf
+#include <tf/transform_datatypes.h>
+
+
 class PlanPickAction {
  protected:
   ros::NodeHandle nh_;
@@ -53,6 +57,6 @@ class PlanPickAction {
   motion_msgs::MoveToPostureGoal arm_posture_goal_;
 
 };
-
+geometry_msgs::PoseStamped computeGripperGraspPose(geometry_msgs::Pose pose);
 
 #endif /* PLAN_PICK_SERVER_HPP */
