@@ -211,8 +211,7 @@ geometry_msgs::PoseStamped computeGripperGraspPose(geometry_msgs::Pose pose) {
   else // sides
     yaw -= offset;
 
-  // fixed numbers due
-  target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(3.14, 0.0, yaw);
-
+  target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(3.09, -0.02, yaw);
+  ROS_INFO("Computed Grasp Quaternion x: %f  y: %f  z: %f  w: %f", target_pose.pose.orientation.x, target_pose.pose.orientation.y, target_pose.pose.orientation.z, target_pose.pose.orientation.w);
   return target_pose;
 }
