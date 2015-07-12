@@ -52,27 +52,15 @@ void PlanPickAction::executeCB() {
   as_.publishFeedback(feedback_);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
-  int direction = -1;
-  if (object_pose_.pose.position.x > 0.2) {
-    // face forward
-    direction = 2;
-  } else if (object_pose_.pose.position.y > 0.0) {
-    // face left
-    direction = 1;
-  } else {
-    // face right
-    direction = 3;
-  }
-
   geometry_msgs::PoseStamped gripper_pose = object_pose_;
   gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.orientation);
 
   // Safety guard for never attempting to reach below the ground
-  if (gripper_pose.pose.position.z < 0.02) {
-    ROS_INFO("Attempting to reach below the ground with z-coord: %f", gripper_pose.pose.position.z);
-    ROS_INFO("Assuming z=0.02 for safety");
-    gripper_pose.pose.position.z = 0.02;
-  }
+  // if (gripper_pose.pose.position.z < 0.02) {
+  //   ROS_INFO("Attempting to reach below the ground with z-coord: %f", gripper_pose.pose.position.z);
+  //   ROS_INFO("Assuming z=0.02 for safety");
+  //   gripper_pose.pose.position.z = 0.02;
+  // }
 
 
   while (going) {

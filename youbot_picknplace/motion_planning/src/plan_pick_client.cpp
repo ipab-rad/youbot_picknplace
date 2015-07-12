@@ -50,6 +50,12 @@ int main (int argc, char **argv) {
     target_pose.pose.position.y = -0.3;
     target_pose.pose.position.z = 0.02;
     target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.06);
+  } else if (command == 4) {
+    // face right for controlled simulation
+    target_pose.pose.position.x = 0.12;
+    target_pose.pose.position.y = -0.29;
+    target_pose.pose.position.z = 0.0;
+    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.12);
   }
 
   goal.object_pose = target_pose;
