@@ -56,11 +56,11 @@ void PlanPickAction::executeCB() {
   gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.orientation);
 
   // Safety guard for never attempting to reach below the ground
-  // if (gripper_pose.pose.position.z < 0.02) {
-  //   ROS_INFO("Attempting to reach below the ground with z-coord: %f", gripper_pose.pose.position.z);
-  //   ROS_INFO("Assuming z=0.02 for safety");
-  //   gripper_pose.pose.position.z = 0.02;
-  // }
+  if (gripper_pose.pose.position.z < 0.0) {
+    ROS_INFO("Attempting to reach below the ground with z-coord: %f", gripper_pose.pose.position.z);
+    ROS_INFO("Assuming z=0.02 for safety");
+    gripper_pose.pose.position.z = 0.0;
+  }
 
 
   while (going) {
