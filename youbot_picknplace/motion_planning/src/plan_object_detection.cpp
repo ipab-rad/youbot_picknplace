@@ -46,7 +46,8 @@ void PlanObjectDetectionAction::executeCB() {
 
   //  states:
   // 0 check front
-  // 1 check
+  // 1 check right
+  // 2 check left
   int state = 0;
 
   while (going) {
@@ -56,14 +57,17 @@ void PlanObjectDetectionAction::executeCB() {
       going = false;
     }
 
+    if (!detect_) {
+      if (state == 0)
+        posture_goal_.posture = "check_front";
+      else if (state == 1)
+        posture_goal_.posture = "check_right";
+      else if (state == 2)
+        posture_goal_.posture = "check_left";
 
-    if (state == 0 && !detect_) {
-      // send a movement to pose goal to the action client
-      posture_goal_.posture = "check_front";
       // move to pose action
       ac_move_.waitForServer();
       ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
-
       ac_move_.sendGoal(posture_goal_);
       feedback_.curr_state = 1;
       as_.publishFeedback(feedback_);
@@ -77,60 +81,18 @@ void PlanObjectDetectionAction::executeCB() {
         // start timer
         timed_out_ = false;
         timer_ = nh_.createTimer(ros::Duration(20), &PlanObjectDetectionAction::timerCB, this, true);
-      }
-    } else if (state == 1 && !detect_) {
-      // send a movement to pose goal to the action client
-      posture_goal_.posture = "check_right";
-      // move to pose action
-      ac_move_.waitForServer();
-      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
-
-      ac_move_.sendGoal(posture_goal_);
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-      ac_move_.waitForResult();
-      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        // send a goal to the obj detection action
-        sensing_msgs::DetectObjectGoal detect_goal;
-        detect_goal.detect = true;
-        detect_ac_.sendGoal(detect_goal);
-        detect_ = true;
-        // start timer
-        timed_out_ = false;
-        timer_ = nh_.createTimer(ros::Duration(20), &PlanObjectDetectionAction::timerCB, this, true);
-
-      }
-    } else if (state == 2 && !detect_) {
-      // send a movement to pose goal to the action client
-      posture_goal_.posture = "check_left";
-      // move to pose action
-      ac_move_.waitForServer();
-      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
-
-      ac_move_.sendGoal(posture_goal_);
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-      ac_move_.waitForResult();
-      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        // send a goal to the obj detection action
-        sensing_msgs::DetectObjectGoal detect_goal;
-        detect_goal.detect = true;
-        detect_ac_.sendGoal(detect_goal);
-        detect_ = true;
-        // start timer
-        timed_out_ = false;
-        timer_ = nh_.createTimer(ros::Duration(20), &PlanObjectDetectionAction::timerCB, this, true);
-
       }
     }
 
 
     // debug: monitor action
     // ROS_INFO("Current State: %s\n", detect_ac_.getState().toString().c_str());
-    if (detect_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      detect_ = false;
-      success = true;
-      going = false;
+    if (detect_) {
+      if (detect_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        detect_ = false;
+        success = true;
+        going = false;
+      }
     }
 
     if (timed_out_) {
@@ -169,6 +131,6 @@ void PlanObjectDetectionAction::executeCB() {
 
 }
 
-void PlanObjectDetectionAction::timerCB(const ros::TimerEvent& event) {
+void PlanObjectDetectionAction::timerCB(const ros::TimerEvent & event) {
   timed_out_ = true;
 }
