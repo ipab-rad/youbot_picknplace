@@ -137,6 +137,7 @@ void MoveToPoseAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
+  timer_.stop();
 }
 
 void MoveToPoseAction::timerCB(const ros::TimerEvent& event) {
