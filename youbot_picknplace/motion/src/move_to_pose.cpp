@@ -50,7 +50,7 @@ void MoveToPoseAction::executeCB() {
 
   // setting an action timer
   timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(20), &MoveToPoseAction::timerCB, this, true);
+  timer_ = nh_.createTimer(ros::Duration(40), &MoveToPoseAction::timerCB, this, true);
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -62,7 +62,7 @@ void MoveToPoseAction::executeCB() {
     if (state == 0) {
       group.setPoseTarget(target_pose_, group.getEndEffectorLink());
       group.setGoalTolerance(distance_threshold_);
-      group.setGoalOrientationTolerance(0.2);
+      group.setGoalOrientationTolerance(0.1);
       group.setPlanningTime(20.0);
       if (!group.plan(plan)) {
         ROS_FATAL("Unable to create motion plan.  Aborting.");

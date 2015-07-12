@@ -11,8 +11,9 @@ int main (int argc, char **argv) {
   ros::init(argc, argv, "test_planpick");
   ros::NodeHandle n;
 
-  if ( argc != 4)
+  if ( argc != 2)
     return 0;
+
 
   // create the action client
   // true causes the client to spin its own thread
@@ -28,27 +29,28 @@ int main (int argc, char **argv) {
   motion_planning_msgs::PlanPickGoal goal;
   geometry_msgs::PoseStamped target_pose;
   target_pose.header.frame_id = "base_footprint";
-  // geometry_msgs::Quaternion quat;
-  // quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
-  // target_pose.pose.orientation.x = quat.x;
-  // target_pose.pose.orientation.y = quat.y;
-  // target_pose.pose.orientation.z = quat.z;
-  // target_pose.pose.orientation.w = quat.w;
-  // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-  target_pose.pose.position.x = atof(argv[1]);
-  target_pose.pose.position.y = atof(argv[2]);
-  target_pose.pose.position.z = atof(argv[3]);
 
-  motion_msgs::GripperPose srv;
-  srv.request.position = target_pose.pose.position;
-  if (pose_c.call(srv)) {
-    ROS_INFO("Received orientation from GripperPose");
-    target_pose.pose.orientation = srv.response.orientation;
-  } else {
-    ROS_ERROR("Failed to call service GripperPose");
-    return 1;
+  int command = atoi(argv[1]);
+  // simulate some cube poses wrt to base frame
+  if (command == 1) {
+    // face forward
+    target_pose.pose.position.x = 0.42;
+    target_pose.pose.position.y = -0.19;
+    target_pose.pose.position.z = 0.02;
+    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
+  } else if (command == 2) {
+    // face left
+    target_pose.pose.position.x = 0.09;
+    target_pose.pose.position.y = 0.29;
+    target_pose.pose.position.z = 0.02;
+    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.01, -0.002, -0.07);
+  } else if (command == 3) {
+    // face right
+    target_pose.pose.position.x = 0.11;
+    target_pose.pose.position.y = -0.3;
+    target_pose.pose.position.z = 0.02;
+    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.06);
   }
-
 
   goal.object_pose = target_pose;
   ac.sendGoal(goal);

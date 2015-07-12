@@ -46,7 +46,7 @@ void PlanPickAction::executeCB() {
   // 2 opened gripper
   // 3 grasped
   // 4 closed gripper
-  int state = 0;
+  int state = 1;
   ros::Rate r(10);
   feedback_.curr_state = 1;
   as_.publishFeedback(feedback_);
@@ -64,29 +64,8 @@ void PlanPickAction::executeCB() {
     direction = 3;
   }
 
-  // transform point to base link to know orientation
-  try {
-    // tf::StampedTransform stransform;
-    tf::TransformListener listener;
-    geometry_msgs::PoseStamped pin;
-    pin.header.frame_id = "/base_footprint";
-    pin.header.stamp = ros::Time(0);
-    pin.pose = object_pose_.pose;
-    geometry_msgs::PoseStamped pout;
-
-    listener.waitForTransform("/base_link", "/base_footprint", ros::Time(0), ros::Duration(13.0) );
-    listener.transformPose("/base_link", pin, pout);
-
-    ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
-
-  } catch (tf::TransformException ex) {
-    ROS_ERROR("%s", ex.what());
-    ros::Duration(1.0).sleep();
-  }
-
   geometry_msgs::PoseStamped gripper_pose = object_pose_;
   gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.orientation);
-
 
   // Safety guard for never attempting to reach below the ground
   if (gripper_pose.pose.position.z < 0.02) {
@@ -103,27 +82,28 @@ void PlanPickAction::executeCB() {
       going = false;
     }
 
-    if (state == 0) {
-      // initial base alignment
-      if (direction == 1)
-        arm_posture_goal_.posture = "l_pre_grasp";
-      else if (direction == 2)
-        arm_posture_goal_.posture = "f_pre_grasp";
-      else
-        arm_posture_goal_.posture = "r_pre_grasp";
+    // if (state == 0) {
+    //   // initial base alignment
+    //   if (direction == 1)
+    //     arm_posture_goal_.posture = "l_pre_grasp";
+    //   else if (direction == 2)
+    //     arm_posture_goal_.posture = "f_pre_grasp";
+    //   else
+    //     arm_posture_goal_.posture = "r_pre_grasp";
 
-      // move to pose action
-      ac_move_posture_.waitForServer();
-      ROS_INFO("Initial Alignment");
+    //   // move to pose action
+    //   ac_move_posture_.waitForServer();
+    //   ROS_INFO("Initial Alignment");
 
-      ac_move_posture_.sendGoal(arm_posture_goal_);
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-      ac_move_posture_.waitForResult();
-      if (ac_move_posture_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
-      }
-    } else if (state == 1) {
+    //   ac_move_posture_.sendGoal(arm_posture_goal_);
+    //   feedback_.curr_state = 1;
+    //   as_.publishFeedback(feedback_);
+    //   ac_move_posture_.waitForResult();
+    //   if (ac_move_posture_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+    //     state = 1;
+    //   }
+    // } else
+    if (state == 1) {
       // target pose declaration
       geometry_msgs::PoseStamped target_pose = gripper_pose;
 
@@ -139,7 +119,7 @@ void PlanPickAction::executeCB() {
         ROS_INFO("Approching action success");
       } else {
         ROS_INFO("Approching action failed: %s", ac_move_.getState().toString().c_str());
-        going = false;
+        // going = false;
       }
     } else if (state == 2) {
       // open gripper action
@@ -164,7 +144,7 @@ void PlanPickAction::executeCB() {
         ROS_INFO("Make contact action success");
       } else {
         ROS_INFO("Make contact action failed: %s", ac_move_.getState().toString().c_str());
-        going = false;
+        // going = false;
       }
     } else if (state == 4) {
       // close gripper
@@ -218,18 +198,20 @@ void PlanPickAction::executeCB() {
 
 geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Quaternion quat) {
   // orientation
-  double yaw_angle = 0.0;
-
   tf::Matrix3x3 mat(tf::Quaternion(quat.x, quat.y, quat.z, quat.w));
   double roll; double pitch; double yaw;
   mat.getRPY(roll, pitch, yaw);
-  ROS_INFO("Cube RPY orientation in base_link's frame: (%f,%f,%f)", roll, pitch, yaw);
+  ROS_INFO("Cube RPY orientation: (%f,%f,%f)", roll, pitch, yaw);
 
-  // double offset = 1.57;
-  // if (pt.x > 0.3) // front
-  //   yaw_angle += offset;
-  // else // sides
-  //   yaw -= offset;
+  double offset = 1.57; // pi/2
+  double yaw_angle = yaw;
+
+  if (yaw < 0.0)
+    yaw_angle += offset;
+  else
+    yaw_angle -= 3 * offset;
+
+  ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.14, 0.0, yaw_angle);
 
   return tf::createQuaternionMsgFromRollPitchYaw(3.14, 0.0, yaw_angle);
 }
