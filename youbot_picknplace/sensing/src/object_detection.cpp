@@ -23,7 +23,6 @@ DetectObjectAction::~DetectObjectAction(void) {
 
 void DetectObjectAction::init() {
   detect_ = false;
-  object_found_ = false;
 }
 
 void DetectObjectAction::goalCB() {
@@ -39,6 +38,8 @@ void DetectObjectAction::preemptCB() {
 void DetectObjectAction::executeCB() {
   bool going = detect_;
   bool success = false;
+  object_found_ = false;
+
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
   feedback_.curr_state = 0;
