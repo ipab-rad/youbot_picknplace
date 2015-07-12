@@ -14,8 +14,8 @@
 #include <motion_msgs/MoveGripperAction.h>
 
 // tf
+#include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
-
 
 class PlanPickAction {
  protected:
@@ -57,6 +57,6 @@ class PlanPickAction {
   motion_msgs::MoveToPostureGoal arm_posture_goal_;
 
 };
-geometry_msgs::PoseStamped computeGripperGraspPose(geometry_msgs::Pose pose);
+geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Quaternion quat);
 
 #endif /* PLAN_PICK_SERVER_HPP */

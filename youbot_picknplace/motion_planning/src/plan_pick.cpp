@@ -1,4 +1,6 @@
 #include "motion_planning/plan_pick.hpp"
+#include <tf/transform_listener.h>
+
 
 PlanPickAction::PlanPickAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
@@ -61,7 +63,31 @@ void PlanPickAction::executeCB() {
     // face right
     direction = 3;
   }
-  geometry_msgs::PoseStamped gripper_pose = computeGripperGraspPose(object_pose_.pose);
+
+  // transform point to base link to know orientation
+  try {
+    // tf::StampedTransform stransform;
+    tf::TransformListener listener;
+    geometry_msgs::PoseStamped pin;
+    pin.header.frame_id = "/base_footprint";
+    pin.header.stamp = ros::Time(0);
+    pin.pose = object_pose_.pose;
+    geometry_msgs::PoseStamped pout;
+
+    listener.waitForTransform("/base_link", "/base_footprint", ros::Time(0), ros::Duration(13.0) );
+    listener.transformPose("/base_link", pin, pout);
+
+    ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+
+  } catch (tf::TransformException ex) {
+    ROS_ERROR("%s", ex.what());
+    ros::Duration(1.0).sleep();
+  }
+
+  geometry_msgs::PoseStamped gripper_pose = object_pose_;
+  gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.orientation);
+
+
   // Safety guard for never attempting to reach below the ground
   if (gripper_pose.pose.position.z < 0.02) {
     ROS_INFO("Attempting to reach below the ground with z-coord: %f", gripper_pose.pose.position.z);
@@ -190,29 +216,20 @@ void PlanPickAction::executeCB() {
   }
 }
 
-geometry_msgs::PoseStamped computeGripperGraspPose(geometry_msgs::Pose pose) {
-  geometry_msgs::PoseStamped target_pose;
-  // msg header
-  target_pose.header.frame_id = "/base_footprint";
-  target_pose.header.stamp = ros::Time(0);
-  // object position
-  geometry_msgs::Point pt = pose.position;
-  target_pose.pose.position = pt;
-
+geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Quaternion quat) {
   // orientation
-  tf::Matrix3x3 mat(tf::Quaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w));
+  double yaw_angle = 0.0;
+
+  tf::Matrix3x3 mat(tf::Quaternion(quat.x, quat.y, quat.z, quat.w));
   double roll; double pitch; double yaw;
   mat.getRPY(roll, pitch, yaw);
-  ROS_INFO("Cube RPY orientation in robot's frame: (%f,%f,%f)", roll, pitch, yaw);
+  ROS_INFO("Cube RPY orientation in base_link's frame: (%f,%f,%f)", roll, pitch, yaw);
 
-  double offset = 1.57;
-  if (pt.x > 0.3) // front
-    yaw += offset;
-  else // sides
-    yaw -= offset;
+  // double offset = 1.57;
+  // if (pt.x > 0.3) // front
+  //   yaw_angle += offset;
+  // else // sides
+  //   yaw -= offset;
 
-  // fixed numbers due
-  target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(3.14, 0.0, yaw);
-
-  return target_pose;
+  return tf::createQuaternionMsgFromRollPitchYaw(3.14, 0.0, yaw_angle);
 }

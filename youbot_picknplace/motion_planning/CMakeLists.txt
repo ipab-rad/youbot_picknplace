@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   motion_msgs
   motion_planning_msgs
   cmake_modules
+  tf
 )
 
 
@@ -80,7 +81,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion_planning
-  CATKIN_DEPENDS actionlib roscpp
+  CATKIN_DEPENDS actionlib roscpp tf
 #  DEPENDS system_lib
 )
 
