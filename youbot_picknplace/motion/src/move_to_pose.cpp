@@ -34,6 +34,7 @@ void MoveToPoseAction::executeCB() {
   bool going = true;
   bool success = false;
   bool moveit_success = false;
+  timed_out_ = false;
   // states:
   // 0 initial
   // 1 planned
@@ -48,9 +49,7 @@ void MoveToPoseAction::executeCB() {
   // get move it to execute motion
   moveit::planning_interface::MoveGroup group("arm_1");
 
-  // setting an action timer
-  timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(40), &MoveToPoseAction::timerCB, this, true);
+  
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -62,7 +61,7 @@ void MoveToPoseAction::executeCB() {
     if (state == 0) {
       group.setPoseTarget(target_pose_, group.getEndEffectorLink());
       group.setGoalTolerance(distance_threshold_);
-      group.setGoalOrientationTolerance(0.1);
+      group.setGoalOrientationTolerance(0.05);
       group.setPlanningTime(20.0);
       if (!group.plan(plan)) {
         ROS_FATAL("Unable to create motion plan.  Aborting.");
@@ -80,6 +79,10 @@ void MoveToPoseAction::executeCB() {
       // do blocking move request
       // ATTENTION: moveit may abort but continue the motion
       moveit_success = group.execute(plan);
+      // set timer
+      // setting an action timer
+      timed_out_ = false;
+      timer_ = nh_.createTimer(ros::Duration(10), &MoveToPoseAction::timerCB, this, true);
       // publish feedback that it is executing motion
       feedback_.curr_state = 2;
       as_.publishFeedback(feedback_);
