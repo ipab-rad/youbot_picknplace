@@ -56,6 +56,12 @@ int main (int argc, char **argv) {
     target_pose.pose.position.y = -0.29;
     target_pose.pose.position.z = 0.0;
     target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.12);
+  } else if (command == 5) {
+    // face forward
+    target_pose.pose.position.x = 0.44;
+    target_pose.pose.position.y = -0.001;
+    target_pose.pose.position.z = 0.001;
+    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
   }
 
   goal.object_pose = target_pose;
