@@ -104,9 +104,9 @@ void PlanPickAction::executeCB() {
 
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         state = 2;
-        ROS_INFO("Approching action success");
+        ROS_INFO("Approaching action success");
       } else {
-        ROS_INFO("Approching action failed: %s", ac_move_.getState().toString().c_str());
+        ROS_INFO("Approaching action failed: %s", ac_move_.getState().toString().c_str());
         // going = false;
       }
     } else if (state == 2) {
@@ -191,15 +191,22 @@ geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Quaternion quat
   mat.getRPY(roll, pitch, yaw);
   ROS_INFO("Cube RPY orientation: (%f,%f,%f)", roll, pitch, yaw);
 
-  double offset = 1.57; // pi/2
-  double yaw_angle = yaw;
+  // double offset = 1.57; // pi/2
+  double yaw_angle = 0.0;
 
-  if (yaw < 0.0)
-    yaw_angle += offset;
-  else
-    yaw_angle -= 3 * offset;
+  // if (yaw < 0.0)
+  //   yaw_angle += offset;
+  // else
+  //   yaw_angle -= 3 * offset;
 
-  ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.14, 0.0, yaw_angle);
+  if (yaw < -1.5) // front
+    yaw_angle = 0.2;
+  else if (yaw < 0.5) // left
+    yaw_angle = 1.77;
+  else // right
+    yaw_angle = -1.37;
 
-  return tf::createQuaternionMsgFromRollPitchYaw(3.14, 0.0, yaw_angle);
+  ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.141, 0.001, yaw_angle);
+
+  return tf::createQuaternionMsgFromRollPitchYaw(3.141, 0.001, yaw_angle);
 }
