@@ -10,6 +10,10 @@ int main (int argc, char **argv)
 {
   ros::init(argc, argv, "test_movetoposture");
 
+  if(argc!=2){
+    ROS_INFO("Usage: argument1=desired posture");
+    return 0;
+  }
   // create the action client
   // true causes the client to spin its own thread
   actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac("motion/move_to_posture", true);
@@ -21,7 +25,7 @@ int main (int argc, char **argv)
   ROS_INFO("Action server started, sending goal.");
   // send a goal to the action
   motion_msgs::MoveToPostureGoal goal;
-  goal.posture = "candle";
+  goal.posture = argv[1];
 
 
   ac.sendGoal(goal);
