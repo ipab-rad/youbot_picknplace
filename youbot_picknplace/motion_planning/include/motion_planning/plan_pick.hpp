@@ -57,6 +57,6 @@ class PlanPickAction {
   motion_msgs::MoveToPostureGoal arm_posture_goal_;
 
 };
-geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Quaternion quat);
+geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt);
 
 #endif /* PLAN_PICK_SERVER_HPP */
