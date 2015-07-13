@@ -84,47 +84,49 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
     const object_recognition_msgs::RecognizedObject& object = msg->objects[0];
     const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
 
-    ROS_INFO("Object was recognized. Key: %s", object.type.key.c_str());
-    try {
-      ROS_INFO("Object detection frame: %s", object.pose.header.frame_id.c_str());
-      geometry_msgs::PoseStamped pin;
-      pin.header.frame_id = object.pose.header.frame_id;
-      pin.header.stamp = ros::Time(0);
-      pin.pose = obj_pose;
-      geometry_msgs::PoseStamped pout;
+    ROS_INFO("Object was detected. With confidence: %f", object.confidence);
+    if (object.confidence>0.95){
+      try {
+        ROS_INFO("Object detection frame: %s", object.pose.header.frame_id.c_str());
+        geometry_msgs::PoseStamped pin;
+        pin.header.frame_id = object.pose.header.frame_id;
+        pin.header.stamp = ros::Time(0);
+        pin.pose = obj_pose;
+        geometry_msgs::PoseStamped pout;
 
-      listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-      ROS_INFO("Received transform to robot base");
-      listener.transformPose("/base_footprint", pin, pout);
-      ROS_INFO("Transformed pose into robot's frame");
-      ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+        listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+        ROS_INFO("Received transform to robot base");
+        listener.transformPose("/base_footprint", pin, pout);
+        ROS_INFO("Transformed pose into robot's frame");
+        ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
 
-      object_pose_ = pout;
-      object_found_ = true;
+        object_pose_ = pout;
+        object_found_ = true;
 
-      detect_ = false;
+        detect_ = false;
 
 
-    } catch (tf::TransformException ex) {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
+      } catch (tf::TransformException ex) {
+        ROS_ERROR("%s", ex.what());
+        ros::Duration(1.0).sleep();
+      }
+
+      // TEST
+      // geometry_msgs::PoseStamped target_pose;
+      // target_pose.header.frame_id = "base_footprint";
+      // geometry_msgs::Quaternion quat;
+      // quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
+      // target_pose.pose.orientation.x = quat.x;
+      // target_pose.pose.orientation.y = quat.y;
+      // target_pose.pose.orientation.z = quat.z;
+      // target_pose.pose.orientation.w = quat.w;
+      // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
+      // target_pose.pose.position.x = 0.1;
+      // target_pose.pose.position.y = -0.3;
+      // target_pose.pose.position.z = 0.02;
+      // object_pose_ = target_pose;
+      // object_found_ = true;
+
     }
-
-    // TEST
-    // geometry_msgs::PoseStamped target_pose;
-    // target_pose.header.frame_id = "base_footprint";
-    // geometry_msgs::Quaternion quat;
-    // quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
-    // target_pose.pose.orientation.x = quat.x;
-    // target_pose.pose.orientation.y = quat.y;
-    // target_pose.pose.orientation.z = quat.z;
-    // target_pose.pose.orientation.w = quat.w;
-    // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-    // target_pose.pose.position.x = 0.1;
-    // target_pose.pose.position.y = -0.3;
-    // target_pose.pose.position.z = 0.02;
-    // object_pose_ = target_pose;
-    // object_found_ = true;
-
   }
 }
