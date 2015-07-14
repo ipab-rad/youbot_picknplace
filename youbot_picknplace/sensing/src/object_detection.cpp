@@ -23,6 +23,8 @@ DetectObjectAction::~DetectObjectAction(void) {
 
 void DetectObjectAction::init() {
   detect_ = false;
+  required_validations_ = 2;
+  sim_threshold_ = 0.01;
 }
 
 void DetectObjectAction::goalCB() {
@@ -39,6 +41,8 @@ void DetectObjectAction::executeCB() {
   bool going = detect_;
   bool success = false;
   object_found_ = false;
+  object_validated_ = false;
+  validation_count_ = 0;
 
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
@@ -52,7 +56,7 @@ void DetectObjectAction::executeCB() {
       going = false;
     }
 
-    if (object_found_) {
+    if (object_found_ && object_validated_) {
       result_.pose = object_pose_;
       going = false;
       success = true;
@@ -87,7 +91,6 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
     ROS_INFO("Object was detected. With confidence: %f", object.confidence);
     if (object.confidence>0.95){
       try {
-        ROS_INFO("Object detection frame: %s", object.pose.header.frame_id.c_str());
         geometry_msgs::PoseStamped pin;
         pin.header.frame_id = object.pose.header.frame_id;
         pin.header.stamp = ros::Time(0);
@@ -95,38 +98,50 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
         geometry_msgs::PoseStamped pout;
 
         listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-        ROS_INFO("Received transform to robot base");
         listener.transformPose("/base_footprint", pin, pout);
-        ROS_INFO("Transformed pose into robot's frame");
-        ROS_INFO("3D point in frame of /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+        ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
 
         object_pose_ = pout;
         object_found_ = true;
 
-        detect_ = false;
-
+        if (validateObject(pout.pose.position)){
+          detect_ = false;
+          object_validated_ = true;
+        }
 
       } catch (tf::TransformException ex) {
         ROS_ERROR("%s", ex.what());
         ros::Duration(1.0).sleep();
       }
-
-      // TEST
-      // geometry_msgs::PoseStamped target_pose;
-      // target_pose.header.frame_id = "base_footprint";
-      // geometry_msgs::Quaternion quat;
-      // quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
-      // target_pose.pose.orientation.x = quat.x;
-      // target_pose.pose.orientation.y = quat.y;
-      // target_pose.pose.orientation.z = quat.z;
-      // target_pose.pose.orientation.w = quat.w;
-      // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-      // target_pose.pose.position.x = 0.1;
-      // target_pose.pose.position.y = -0.3;
-      // target_pose.pose.position.z = 0.02;
-      // object_pose_ = target_pose;
-      // object_found_ = true;
-
     }
   }
+}
+
+// functions to check if this object has been validated given previous observations
+// if an object does not pass the similarity test it will reset the validations counter
+// if there have been 'required_validations_' validations it returns true
+// false otherwise
+bool DetectObjectAction::validateObject(geometry_msgs::Point point){
+  if (!checkSimilarity(point.x,object_pose_.pose.position.x, sim_threshold_)
+    || !checkSimilarity(point.y,object_pose_.pose.position.y, sim_threshold_)
+    || !checkSimilarity(point.z,object_pose_.pose.position.z, sim_threshold_)){
+    validation_count_ = 0;
+    return false;
+  }
+  validation_count_++;
+  ROS_INFO("Similar object position has been received. Validation count at: %d",validation_count_);
+
+  if (validation_count_ == required_validations_)
+    return true;
+  else
+    return false;
+}
+
+// returns true if it satisfies the similarity criteria
+// false otherwise
+bool checkSimilarity(double p1, double p2, double threshold){
+  if (fabs(p1-p2)<threshold)
+    return true;
+  else
+    return false;
 }

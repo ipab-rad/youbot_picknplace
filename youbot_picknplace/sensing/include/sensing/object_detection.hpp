@@ -43,6 +43,8 @@ class DetectObjectAction {
 
   void detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg);
 
+  bool validateObject(geometry_msgs::Point point);
+
  private:
   geometry_msgs::PoseStamped object_pose_;
   bool detect_;
@@ -50,8 +52,15 @@ class DetectObjectAction {
   // object detection
   ros::Subscriber object_sub_ ;
   bool object_found_;
+  bool object_validated_;
+  int validation_count_;
+  int required_validations_;
+  double sim_threshold_;
+
 
 };
+
+bool checkSimilarity(double p1, double p2, double threshold);
 
 
 #endif /* OBJECT_DETECTION_SERVER_HPP */
