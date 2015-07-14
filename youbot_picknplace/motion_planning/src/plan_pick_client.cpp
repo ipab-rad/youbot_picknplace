@@ -11,7 +11,7 @@ int main (int argc, char **argv) {
   ros::init(argc, argv, "test_planpick");
   ros::NodeHandle n;
 
-  if ( argc != 2)
+  if ( argc != 2 || argc != 4)
     return 0;
 
 
@@ -30,40 +30,47 @@ int main (int argc, char **argv) {
   geometry_msgs::PoseStamped target_pose;
   target_pose.header.frame_id = "base_footprint";
 
-  int command = atoi(argv[1]);
-  // simulate some cube poses wrt to base frame
-  if (command == 1) {
-    // face forward
-    target_pose.pose.position.x = 0.42;
-    target_pose.pose.position.y = -0.19;
-    target_pose.pose.position.z = 0.02;
-    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
-  } else if (command == 2) {
-    // face left
-    target_pose.pose.position.x = 0.09;
-    target_pose.pose.position.y = 0.29;
-    target_pose.pose.position.z = 0.02;
-    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.01, -0.002, -0.07);
-  } else if (command == 3) {
-    // face right
-    target_pose.pose.position.x = 0.11;
-    target_pose.pose.position.y = -0.3;
-    target_pose.pose.position.z = 0.02;
-    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.06);
-  } else if (command == 4) {
-    // face right for controlled simulation
-    target_pose.pose.position.x = 0.12;
-    target_pose.pose.position.y = -0.29;
-    target_pose.pose.position.z = 0.0;
-    target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.12);
-  } else if (command == 5) {
-    // face forward
-    target_pose.pose.position.x = 0.44;
-    target_pose.pose.position.y = -0.001;
-    target_pose.pose.position.z = 0.001;
+  if (argc == 2){
+    int command = atoi(argv[1]);
+    // simulate some cube poses wrt to base frame
+    if (command == 1) {
+      // face forward
+      target_pose.pose.position.x = 0.42;
+      target_pose.pose.position.y = -0.19;
+      target_pose.pose.position.z = 0.02;
+      target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
+    } else if (command == 2) {
+      // face left
+      target_pose.pose.position.x = 0.09;
+      target_pose.pose.position.y = 0.29;
+      target_pose.pose.position.z = 0.02;
+      target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.01, -0.002, -0.07);
+    } else if (command == 3) {
+      // face right
+      target_pose.pose.position.x = 0.11;
+      target_pose.pose.position.y = -0.3;
+      target_pose.pose.position.z = 0.02;
+      target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.06);
+    } else if (command == 4) {
+      // face right for controlled simulation
+      target_pose.pose.position.x = 0.12;
+      target_pose.pose.position.y = -0.29;
+      target_pose.pose.position.z = 0.0;
+      target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.01, -0.01, 3.12);
+    } else if (command == 5) {
+      // face forward
+      target_pose.pose.position.x = 0.44;
+      target_pose.pose.position.y = -0.001;
+      target_pose.pose.position.z = 0.001;
+      target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
+    }
+  }
+  else{
+    target_pose.pose.position.x = atof(argv[1]);
+    target_pose.pose.position.y = atof(argv[2]);
+    target_pose.pose.position.z = atof(argv[3]);
     target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
   }
-
   goal.object_pose = target_pose;
   ac.sendGoal(goal);
 
