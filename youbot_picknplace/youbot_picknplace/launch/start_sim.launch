@@ -6,14 +6,7 @@ This launch file starts a Gazebo server with the youBot in the project's scene. 
 
 <launch>
 
-
-		<!-- launch gazebo world -->
-		<include file="$(find youbot_gazebo_robot)/launch/youbot.launch" />
-
-		<!-- move it interface -->
-    <include file="$(find youbot_moveit_config)/launch/move_group.launch">
-  			<arg name="publish_monitored_planning_scene" value="true" />
- 		</include>
-
+	<!-- launch gazebo world -->
+	<include file="$(find youbot_gazebo_robot)/launch/youbot.launch" />
 
 </launch>

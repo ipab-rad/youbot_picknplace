@@ -6,6 +6,10 @@ This launch file starts a series of nodes for the Picknplace project.
 -->
 
 <launch>
+	<!-- move it interface -->
+    <include file="$(find youbot_moveit_config)/launch/move_group.launch">
+  		<arg name="publish_monitored_planning_scene" value="true" />
+ 	</include>
 
     <!-- motion action servers -->
     <node name="motion" pkg="motion" type="motion" output="screen" />
