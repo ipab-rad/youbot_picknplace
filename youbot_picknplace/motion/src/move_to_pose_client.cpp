@@ -33,6 +33,9 @@ int main (int argc, char **argv) {
   target_pose.pose.position.y = -0.3;
   target_pose.pose.position.z = 0.02;
   goal.pose = target_pose;
+  goal.distance_tol = 0.01;
+  goal.orientation_tol = 0.05;
+  goal.planning_time = 20.0;
 
 
   ac.sendGoal(goal);

@@ -98,6 +98,9 @@ void PlanPickAction::executeCB() {
       // approach object
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
+      arm_goal_.distance_tol = 0.01;
+      arm_goal_.orientation_tol = 0.05;
+      arm_goal_.planning_time = 20.0; 
       ROS_INFO("Approaching object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();
@@ -124,6 +127,9 @@ void PlanPickAction::executeCB() {
     } else if (state == 3) {
       // move to pose action
       arm_goal_.pose = gripper_pose;
+      arm_goal_.distance_tol = 0.01;
+      arm_goal_.orientation_tol = 0.05;
+      arm_goal_.planning_time = 20.0;
       ROS_INFO("Making contact with object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();
@@ -151,6 +157,9 @@ void PlanPickAction::executeCB() {
       geometry_msgs::PoseStamped target_pose = gripper_pose;
       target_pose.pose.position.z += 0.05;
       arm_goal_.pose = target_pose;
+      arm_goal_.distance_tol = 0.01;
+      arm_goal_.orientation_tol = 0.05;
+      arm_goal_.planning_time = 20.0;
       ROS_INFO("Moving away from object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();

@@ -44,8 +44,10 @@ class MoveToPoseAction {
   geometry_msgs::PoseStamped curr_pose_;
 
   // threshold
-  double distance_threshold_;
+  double distance_tol_;
   double distance_;
+  double orientation_tol_;
+  double planning_time_;
 
   // timer for action timeout
   ros::Timer timer_;

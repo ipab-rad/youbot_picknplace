@@ -11,7 +11,7 @@ int main (int argc, char **argv) {
   ros::init(argc, argv, "test_planpick");
   ros::NodeHandle n;
 
-  if ( argc != 2 || argc != 4)
+  if ( argc != 2 && argc != 4)
     return 0;
 
 

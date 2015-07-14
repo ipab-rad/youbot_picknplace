@@ -17,11 +17,14 @@ MoveToPoseAction::~MoveToPoseAction(void) {
 }
 
 void MoveToPoseAction::init() {
-  distance_threshold_ = 0.01;
 }
 
 void MoveToPoseAction::goalCB() {
-  target_pose_ = as_.acceptNewGoal()->pose;
+  boost::shared_ptr< const motion_msgs::MoveToPoseGoal > goal = as_.acceptNewGoal();
+  target_pose_ = goal->pose;
+  distance_tol_ = goal->distance_tol;
+  planning_time_ = goal->planning_time;
+  orientation_tol_ = goal->orientation_tol;
   this->executeCB();
 }
 
@@ -60,9 +63,9 @@ void MoveToPoseAction::executeCB() {
 
     if (state == 0) {
       group.setPoseTarget(target_pose_, group.getEndEffectorLink());
-      group.setGoalTolerance(distance_threshold_);
-      group.setGoalOrientationTolerance(0.05);
-      group.setPlanningTime(20.0);
+      group.setGoalTolerance(distance_tol_);
+      group.setGoalOrientationTolerance(orientation_tol_);
+      group.setPlanningTime(planning_time_);
       if (!group.plan(plan)) {
         ROS_FATAL("Unable to create motion plan.  Aborting.");
         success = false;
@@ -99,7 +102,7 @@ void MoveToPoseAction::executeCB() {
 
       //  TODO fix this condition as it needs to use some threshold
       //  now it accepts any distance
-      if (distance_ < distance_threshold_) {
+      if (distance_ < distance_tol_) {
         state = 3;
         going = false;
         success = true;
