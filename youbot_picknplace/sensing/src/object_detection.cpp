@@ -101,13 +101,13 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
         listener.transformPose("/base_footprint", pin, pout);
         ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
 
-        object_pose_ = pout;
-        object_found_ = true;
-
         if (validateObject(pout.pose.position)){
           detect_ = false;
           object_validated_ = true;
         }
+
+        object_pose_ = pout;
+        object_found_ = true;
 
       } catch (tf::TransformException ex) {
         ROS_ERROR("%s", ex.what());
