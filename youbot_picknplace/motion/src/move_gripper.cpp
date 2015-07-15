@@ -77,11 +77,11 @@ void MoveGripperAction::executeCB() {
       gripperJointPositions[1].joint_uri = joint_name2_;
       gripperJointPositions[1].unit = boost::units::to_string(boost::units::si::meter);
 
-      if (gripper_command_ == 1) { // open
+      if (gripper_command_ == 0) { // close
         gripperJointPositions[0].value = 0.0109;
         gripperJointPositions[1].value = 0.0109;
 
-      } else { // close
+      } else { // open
         gripperJointPositions[0].value = 0.0011;
         gripperJointPositions[1].value = 0.0011;
       }
@@ -100,10 +100,10 @@ void MoveGripperAction::executeCB() {
       // TODO: fix here position of points based on command
       trajectory_pt1_ = trajectory_msgs::JointTrajectoryPoint();
 
-      if (gripper_command_ == 1) { // open
+      if (gripper_command_ == 1) { // close
         trajectory_pt1_.positions.push_back(0.0109);
         trajectory_pt1_.positions.push_back(0.0109);
-      } else { // close
+      } else { // open
         trajectory_pt1_.positions.push_back(0.0011);
         trajectory_pt1_.positions.push_back(0.0011);
       }
