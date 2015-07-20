@@ -125,6 +125,7 @@ void MoveToPoseAction::executeCB() {
     ros::spinOnce();
     r.sleep();
   }
+  curr_pose_ = group.getCurrentPose();
   ROS_INFO("TARGET POSE: x:%f y:%f z:%f", target_pose_.pose.position.x, target_pose_.pose.position.y, target_pose_.pose.position.z);
   ROS_INFO("CURRENT POSE: x:%f y:%f z:%f", curr_pose_.pose.position.x, curr_pose_.pose.position.y, curr_pose_.pose.position.z);
   distance_ = sqrt(pow(curr_pose_.pose.position.x - target_pose_.pose.position.x, 2) +

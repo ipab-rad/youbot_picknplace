@@ -52,10 +52,17 @@ void PlanPickAction::executeCB() {
   as_.publishFeedback(feedback_);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
+  // motion attempts
+  int motion_attempts = 6;
+
   geometry_msgs::PoseStamped gripper_pose = object_pose_;
   gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.position);
 
-  double ground_limit = 0.09;
+  double distanceObj = sqrt(pow(0.14 - object_pose_.pose.position.x, 2) +
+                       pow(object_pose_.pose.position.y, 2));     
+  ROS_INFO("Object 2D distance to base_link is: %f",distanceObj);
+
+  double ground_limit = 0.1;
   // Safety guard for never attempting to reach below the ground
   if (gripper_pose.pose.position.z < ground_limit) {
     ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f", ground_limit, gripper_pose.pose.position.z);
@@ -111,7 +118,11 @@ void PlanPickAction::executeCB() {
         ROS_INFO("Approaching action success");
       } else {
         ROS_INFO("Approaching action failed: %s", ac_move_.getState().toString().c_str());
-        // going = false;
+        if(motion_attempts>0){
+          motion_attempts--;
+        }else{
+          going = false;
+        }
       }
     } else if (state == 2) {
       // open gripper action
@@ -139,7 +150,11 @@ void PlanPickAction::executeCB() {
         ROS_INFO("Make contact action success");
       } else {
         ROS_INFO("Make contact action failed: %s", ac_move_.getState().toString().c_str());
-        // going = false;
+        if(motion_attempts>0){
+          motion_attempts--;
+        }else{
+          going = false;
+        }
       }
     } else if (state == 4) {
       // close gripper
