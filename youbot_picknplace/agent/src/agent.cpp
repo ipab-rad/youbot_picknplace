@@ -14,7 +14,16 @@
 int main (int argc, char **argv) {
   ros::init(argc, argv, "agent");
 
+  if(argc!=2){
+    ROS_INFO("Please provide one argument: 1=motion 0=no motion");
+    return 0;
+  }
+
+
   bool done_nav = false;
+  if (atoi(argv[1])==0)
+    done_nav = true;
+
   bool done_detect = false;
   bool done_pick = false;
   bool done_place = false;
@@ -29,30 +38,29 @@ int main (int argc, char **argv) {
   // START
 
   // NAVIGATION
-  // create the action client
-  ROS_INFO("Waiting for navigation action server to start.");
-  // wait for the action server to start
-  nav_ac.waitForServer(); //will wait for infinite time
+  if(!done_nav){
+    ROS_INFO("Waiting for navigation action server to start.");
+    // wait for the action server to start
+    nav_ac.waitForServer(); //will wait for infinite time
 
-  ROS_INFO("Move to Position Action server started, sending goal.");
-  // send a goal to the action
-  navigation_msgs::MoveToPositionGoal nav_goal;
-  geometry_msgs::Point position;
-  position.x = 0.75;
-  position.y = 0.0;
-  position.z = 0.0;
-  nav_goal.position = position;
+    ROS_INFO("Move to Position Action server started, sending goal.");
+    // send a goal to the action
+    navigation_msgs::MoveToPositionGoal nav_goal;
+    geometry_msgs::Point position;
+    position.x = 0.75;
+    position.y = 0.0;
+    position.z = 0.0;
+    nav_goal.position = position;
 
-  nav_ac.sendGoal(nav_goal);
+    nav_ac.sendGoal(nav_goal);
 
-  nav_ac.waitForResult();
-  if (nav_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    done_nav = true;
+    nav_ac.waitForResult();
+    if (nav_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      done_nav = true;
+    }
   }
 
   // OBJECT DETECTION
-  // create the action client
-  // true causes the client to spin its own thread
   if(done_nav){
     ROS_INFO("Waiting for Detect action server to start.");
     // wait for the action server to start
