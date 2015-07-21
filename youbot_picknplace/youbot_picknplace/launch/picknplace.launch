@@ -21,6 +21,9 @@ This launch file starts a series of nodes for the Picknplace project.
     <!-- start sensing action servers -->
     <node name="sensing" pkg="sensing" type="sensing" output="screen" />
 
+    <!-- start navigation action servers -->
+    <node name="navigation" pkg="navigation" type="navigation" output="screen" />
+    
     <!-- launch gazebo world -->
     <!-- <include file="$(find youbot_picknplace)/launch/camera.launch" /> -->
 
