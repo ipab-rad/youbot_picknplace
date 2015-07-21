@@ -62,7 +62,7 @@ void PlanPickAction::executeCB() {
                        pow(object_pose_.pose.position.y, 2));     
   ROS_INFO("Object 2D distance to base_link is: %f",distanceObj);
 
-  double ground_limit = 0.1;
+  double ground_limit = 0.095;
   // Safety guard for never attempting to reach below the ground
   if (gripper_pose.pose.position.z < ground_limit) {
     ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f", ground_limit, gripper_pose.pose.position.z);
