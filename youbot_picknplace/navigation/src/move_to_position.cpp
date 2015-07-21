@@ -76,9 +76,9 @@ void MoveToPositionAction::executeCB() {
     distance_ = sqrt(pow(curr_position_.x - target_position_.x, 2) +
                    pow(curr_position_.y - target_position_.y, 2));
 
-    ROS_INFO("TARGET POSITION: x:%f y:%f", target_position_.x, target_position_.y);
-    ROS_INFO("CURRENT POSITION: x:%f y:%f", curr_position_.x, curr_position_.y);
-    ROS_INFO("Current distance to desired position: %f", distance_);
+    // ROS_INFO("TARGET POSITION: x:%f y:%f", target_position_.x, target_position_.y);
+    // ROS_INFO("CURRENT POSITION: x:%f y:%f", curr_position_.x, curr_position_.y);
+    // ROS_INFO("Current distance to desired position: %f", distance_);
 
     if(distance_<distance_tol_)
     {

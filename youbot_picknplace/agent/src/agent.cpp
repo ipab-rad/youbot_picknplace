@@ -51,6 +51,7 @@ int main (int argc, char **argv) {
     position.y = 0.0;
     position.z = 0.0;
     nav_goal.position = position;
+    nav_goal.relative = true;
 
     nav_ac.sendGoal(nav_goal);
 
