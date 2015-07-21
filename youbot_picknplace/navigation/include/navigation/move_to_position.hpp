@@ -49,6 +49,7 @@ class MoveToPositionAction {
   // threshold
   double distance_tol_;
   double distance_;
+  bool relative_;
 
   // moving velocity
   double std_vel_;

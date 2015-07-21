@@ -25,7 +25,15 @@ void MoveToPositionAction::init() {
 }
 
 void MoveToPositionAction::goalCB() {
-  target_position_ = as_.acceptNewGoal()->position;
+  boost::shared_ptr< const navigation_msgs::MoveToPositionGoal > goal = as_.acceptNewGoal();
+  relative_= goal->relative;
+  if(!relative_)
+    target_position_ = goal->position;
+  else{
+    target_position_.x = goal->position.x + curr_position_.x;
+    target_position_.y = goal->position.y + curr_position_.y;
+    target_position_.z = goal->position.z + curr_position_.z;
+  }
   this->executeCB();
 }
 

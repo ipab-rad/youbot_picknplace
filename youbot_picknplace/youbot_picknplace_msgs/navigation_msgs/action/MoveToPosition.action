@@ -1,5 +1,6 @@
 #goal definition
 geometry_msgs/Point position
+bool relative
 ---
 #result definition
 bool success

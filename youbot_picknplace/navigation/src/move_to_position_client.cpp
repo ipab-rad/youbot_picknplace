@@ -5,7 +5,7 @@
 int main (int argc, char **argv) {
   ros::init(argc, argv, "test_movetoposition");
 
-  if (argc!=3)
+  if (argc!=4)
     return 0;
 
   // create the action client
@@ -25,6 +25,11 @@ int main (int argc, char **argv) {
   target_position.y = atof(argv[2]);
   target_position.z = 0.0;
   goal.position = target_position;
+
+  if (atoi(argv[3])==1)
+    goal.relative = true;
+  else
+    goal.relative = false;
 
   ac.sendGoal(goal);
 
