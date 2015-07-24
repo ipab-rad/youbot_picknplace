@@ -150,7 +150,7 @@ void MoveToPositionAction::setTargetTwist(double x, double y, bool stop){
     else
       msg.linear.y = -std_vel_;
   }
-  ROS_INFO("Twist set to: x:%f y:%f",msg.linear.x,msg.linear.y);
+  // ROS_INFO("Twist set to: x:%f y:%f",msg.linear.x,msg.linear.y);
   nav_pub_msg_ = msg;
 }
 

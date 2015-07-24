@@ -3,11 +3,11 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 // messages
-#include <navigation_msgs/MoveToPositionAction.h>
 #include <motion_planning_msgs/PlanObjectDetectionAction.h>
 #include <motion_planning_msgs/PlanPlaceAction.h>
 #include <motion_planning_msgs/PlanPickAction.h>
 #include <motion_planning_msgs/PlanGoHomeAction.h>
+#include <motion_planning_msgs/PlanListenAoiAction.h>
 //tf
 #include <tf/transform_datatypes.h>
 
@@ -29,7 +29,7 @@ int main (int argc, char **argv) {
   bool done_place = false;
   bool done_home = false;
   // action lib clients
-  actionlib::SimpleActionClient<navigation_msgs::MoveToPositionAction> nav_ac("navigation/move_to_position", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac("motion_planning/plan_listen_aoi", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac("motion_planning/plan_detection", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac("motion_planning/plan_pick", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac("motion_planning/plan_place", true);
@@ -37,21 +37,16 @@ int main (int argc, char **argv) {
   
   // START
 
-  // NAVIGATION
+  // NAVIGATION by AREA OF INTEREST LISTENING
   if(!done_nav){
-    ROS_INFO("Waiting for navigation action server to start.");
+    ROS_INFO("Waiting for area of interest action server to start.");
     // wait for the action server to start
     nav_ac.waitForServer(); //will wait for infinite time
 
-    ROS_INFO("Move to Position Action server started, sending goal.");
+    ROS_INFO("Area of interest Action server started, sending goal.");
     // send a goal to the action
-    navigation_msgs::MoveToPositionGoal nav_goal;
-    geometry_msgs::Point position;
-    position.x = 0.75;
-    position.y = 0.0;
-    position.z = 0.0;
-    nav_goal.position = position;
-    nav_goal.relative = true;
+    motion_planning_msgs::PlanListenAoiGoal nav_goal;
+    nav_goal.find = true;
 
     nav_ac.sendGoal(nav_goal);
 

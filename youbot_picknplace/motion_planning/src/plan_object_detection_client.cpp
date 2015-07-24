@@ -7,7 +7,7 @@
 #include <tf/transform_datatypes.h>
 
 int main (int argc, char **argv) {
-  ros::init(argc, argv, "test_planpick");
+  ros::init(argc, argv, "test_plan_detection");
 
   // create the action client
   // true causes the client to spin its own thread
