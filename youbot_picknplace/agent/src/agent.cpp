@@ -8,8 +8,7 @@
 #include <motion_planning_msgs/PlanPickAction.h>
 #include <motion_planning_msgs/PlanGoHomeAction.h>
 #include <motion_planning_msgs/PlanListenAoiAction.h>
-//tf
-#include <tf/transform_datatypes.h>
+#include <motion_planning_msgs/PlanApproachObjectAction.h>
 
 int main (int argc, char **argv) {
   ros::init(argc, argv, "agent");
@@ -39,6 +38,7 @@ int main (int argc, char **argv) {
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac("motion_planning/plan_pick", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac("motion_planning/plan_place", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac("motion_planning/plan_go_home", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachObjectAction> approach_ac("motion_planning/plan_approach_object", true);
   
   // START
 
@@ -101,6 +101,11 @@ int main (int argc, char **argv) {
       pick_ac.waitForResult();
       if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
         state = 3;
+      else if (pick_ac.getResult()->success==-2){
+        ROS_INFO("Out of reach. Suggested movement from Pick (%f,%f,0.0)"
+          ,pick_ac.getResult()->suggestion.x, pick_ac.getResult()->suggestion.y);
+        state = 4;
+      }
       else
         going = false;
     }
@@ -120,6 +125,24 @@ int main (int argc, char **argv) {
       if (place_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
         success = true;
       going = false;
+    }
+    else if(state==4){
+      // APPROACH NEARBY (OUT OF REACH) OBJECT
+      ROS_INFO("Waiting for Approach Object server to start.");
+      // wait for the action server to start
+      approach_ac.waitForServer(); //will wait for infinite time
+
+      ROS_INFO("Approach Object Action server started, sending goal.");
+      // send a goal to the action
+      motion_planning_msgs::PlanApproachObjectGoal approach_goal;
+      approach_goal.position = pick_ac.getResult()->suggestion;
+
+      approach_ac.sendGoal(approach_goal);
+      approach_ac.waitForResult();
+      if (approach_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        state = 1;
+      else
+        going = false;
     }
   }// end while going
 

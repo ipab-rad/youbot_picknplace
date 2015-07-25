@@ -10,6 +10,7 @@
 #include "motion_planning/plan_place.hpp"
 #include "motion_planning/plan_go_home.hpp"
 #include "motion_planning/plan_listen_aoi.hpp"
+#include "motion_planning/plan_approach_object.hpp"
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion_planning");
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
   PlanPlaceAction placePlanner(nh, "plan_place");
   PlanGoHomeAction goHomePlanner(nh, "plan_go_home");
   PlanListenAoiAction listenAoiPlanner(nh, "plan_listen_aoi");
-
+  PlanApproachObjectAction approachObjectPlanner(nh, "plan_approach_object");
 
   ros::spin();
   return 0;

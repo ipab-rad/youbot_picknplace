@@ -118,6 +118,7 @@ add_executable(motion_planning
  src/plan_place.cpp
  src/plan_go_home.cpp
  src/plan_listen_aoi.cpp
+ src/plan_approach_object.cpp
 )
 
 add_executable(plan_detection_client
@@ -140,6 +141,10 @@ add_executable(plan_listen_aoi_client
  src/plan_listen_aoi_client.cpp
 )
 
+add_executable(plan_approach_object_client
+ src/plan_approach_object_client.cpp
+)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion_planning motion_msgs motion_planning_msgs navigation_msgs)
@@ -148,6 +153,7 @@ add_dependencies(plan_pick_client motion_msgs motion_planning_msgs)
 add_dependencies(plan_place_client motion_planning_msgs)
 add_dependencies(plan_go_home_client motion_planning_msgs)
 add_dependencies(plan_listen_aoi_client motion_planning_msgs)
+add_dependencies(plan_approach_object_client motion_planning_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planning
@@ -166,6 +172,9 @@ target_link_libraries(plan_go_home_client
   ${catkin_LIBRARIES}
 )
 target_link_libraries(plan_listen_aoi_client
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(plan_approach_object_client
   ${catkin_LIBRARIES}
 )
 #############

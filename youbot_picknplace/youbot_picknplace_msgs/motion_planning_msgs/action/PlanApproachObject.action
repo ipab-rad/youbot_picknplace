@@ -1,9 +1,8 @@
 #goal definition
-geometry_msgs/PoseStamped object_pose
+geometry_msgs/Point position
 ---
 #result definition
-int32 success
-geometry_msgs/Point suggestion
+bool success
 ---
 #feedback
 # INITIAL=0
