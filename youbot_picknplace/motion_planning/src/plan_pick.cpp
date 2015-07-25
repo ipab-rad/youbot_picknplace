@@ -25,6 +25,7 @@ void PlanPickAction::init() {
   ac_gripper_.waitForServer();
   ac_move_.waitForServer();
   ROS_INFO("Connected to gripper and arm movement servers");
+  approach_dist_ = 0.05;
 }
 
 void PlanPickAction::goalCB() {
@@ -59,8 +60,8 @@ void PlanPickAction::executeCB() {
   gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.position);
 
   double distanceObj = sqrt(pow(0.14 - object_pose_.pose.position.x, 2) +
-                       pow(object_pose_.pose.position.y, 2));     
-  ROS_INFO("Object 2D distance to base_link is: %f",distanceObj);
+                            pow(object_pose_.pose.position.y, 2));
+  ROS_INFO("Object 2D distance to base_link is: %f", distanceObj);
 
   double ground_limit = 0.095;
   // Safety guard for never attempting to reach below the ground
@@ -69,7 +70,7 @@ void PlanPickAction::executeCB() {
     ROS_INFO("Assuming z='ground limit' for safety");
     gripper_pose.pose.position.z = ground_limit;
   }
-  
+
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -104,11 +105,11 @@ void PlanPickAction::executeCB() {
       geometry_msgs::PoseStamped target_pose = gripper_pose;
 
       // approach object
-      target_pose.pose.position.z += 0.05;
+      target_pose.pose.position.z += approach_dist_;
       arm_goal_.pose = target_pose;
       arm_goal_.distance_tol = 0.01;
-      arm_goal_.orientation_tol = 0.05;
-      arm_goal_.planning_time = 20.0; 
+      arm_goal_.orientation_tol = 0.1;
+      arm_goal_.planning_time = 20.0;
       ROS_INFO("Approaching object");
       ac_move_.sendGoal(arm_goal_);
       ac_move_.waitForResult();
@@ -118,9 +119,9 @@ void PlanPickAction::executeCB() {
         ROS_INFO("Approaching action success");
       } else {
         ROS_INFO("Approaching action failed: %s", ac_move_.getState().toString().c_str());
-        if(motion_attempts>0){
+        if (motion_attempts > 0) {
           motion_attempts--;
-        }else{
+        } else {
           going = false;
         }
       }
@@ -140,7 +141,7 @@ void PlanPickAction::executeCB() {
       // move to pose action
       arm_goal_.pose = gripper_pose;
       arm_goal_.distance_tol = 0.01;
-      arm_goal_.orientation_tol = 0.05;
+      arm_goal_.orientation_tol = 0.1;
       arm_goal_.planning_time = 20.0;
       ROS_INFO("Making contact with object");
       ac_move_.sendGoal(arm_goal_);
@@ -150,9 +151,9 @@ void PlanPickAction::executeCB() {
         ROS_INFO("Make contact action success");
       } else {
         ROS_INFO("Make contact action failed: %s", ac_move_.getState().toString().c_str());
-        if(motion_attempts>0){
+        if (motion_attempts > 0) {
           motion_attempts--;
-        }else{
+        } else {
           going = false;
         }
       }
@@ -171,10 +172,10 @@ void PlanPickAction::executeCB() {
     } else if (state == 5) {
       // moving away object
       geometry_msgs::PoseStamped target_pose = gripper_pose;
-      target_pose.pose.position.z += 0.05;
+      target_pose.pose.position.z += approach_dist_;
       arm_goal_.pose = target_pose;
-      arm_goal_.distance_tol = 0.01;
-      arm_goal_.orientation_tol = 0.05;
+      arm_goal_.distance_tol = 0.02;
+      arm_goal_.orientation_tol = 0.2;
       arm_goal_.planning_time = 20.0;
       ROS_INFO("Moving away from object");
       ac_move_.sendGoal(arm_goal_);
@@ -212,8 +213,8 @@ void PlanPickAction::executeCB() {
 geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt) {
   // orientation
   double base_trans = 0.14;
-  double tan_angle = atan2(pt.y, pt.x-base_trans);
-  ROS_INFO("Computed angle: %f",tan_angle);
+  double tan_angle = atan2(pt.y, pt.x - base_trans);
+  ROS_INFO("Computed angle: %f", tan_angle);
 
 
   // old
