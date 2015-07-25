@@ -26,6 +26,7 @@ void PlanPickAction::init() {
   ac_move_.waitForServer();
   ROS_INFO("Connected to gripper and arm movement servers");
   approach_dist_ = 0.05;
+  min_grasp_dist_ = 0.3;
 }
 
 void PlanPickAction::goalCB() {
@@ -63,7 +64,7 @@ void PlanPickAction::executeCB() {
                             pow(object_pose_.pose.position.y, 2));
   ROS_INFO("Object 2D distance to base_link is: %f", distanceObj);
 
-  double ground_limit = 0.095;
+  double ground_limit = 0.095; // 9,5cm
   // Safety guard for never attempting to reach below the ground
   if (gripper_pose.pose.position.z < ground_limit) {
     ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f", ground_limit, gripper_pose.pose.position.z);
@@ -200,11 +201,15 @@ void PlanPickAction::executeCB() {
   as_.publishFeedback(feedback_);
 
   if (success) {
-    result_.success = true;
+    result_.success = 1;
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {
-    result_.success = false;
+    if(distanceObj>min_grasp_dist_)
+      result_.success = -2;
+    else
+      result_.success = -1;
+    
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
@@ -212,32 +217,12 @@ void PlanPickAction::executeCB() {
 
 geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt) {
   // orientation
-  double base_trans = 0.14;
+  double base_trans = 0.143;
   double tan_angle = atan2(pt.y, pt.x - base_trans);
   ROS_INFO("Computed angle: %f", tan_angle);
 
-
-  // old
-  // tf::Matrix3x3 mat(tf::Quaternion(quat.x, quat.y, quat.z, quat.w));
-  // double roll; double pitch; double yaw;
-  // mat.getRPY(roll, pitch, yaw);
-  // ROS_INFO("Cube RPY orientation: (%f,%f,%f)", roll, pitch, yaw);
-
   double offset = 0.25;
   double yaw_angle = tan_angle + offset;
-
-  // old
-  // if (yaw < 0.0)
-  //   yaw_angle += offset;
-  // else
-  //   yaw_angle -= 3 * offset;
-
-  // if (yaw < -1.5) // front
-  //   yaw_angle = 0.2;
-  // else if (yaw < 0.5) // left
-  //   yaw_angle = 1.77;
-  // else // right
-  //   yaw_angle = -1.37;
 
   ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.141, 0.001, yaw_angle);
 

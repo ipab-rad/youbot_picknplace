@@ -74,6 +74,10 @@ int main (int argc, char **argv) {
   goal.object_pose = target_pose;
   ac.sendGoal(goal);
 
+  ac.waitForResult();
+  ROS_INFO("Action server result: %d", ac.getResult()->success);
+
+
   //exit
   return 0;
 }

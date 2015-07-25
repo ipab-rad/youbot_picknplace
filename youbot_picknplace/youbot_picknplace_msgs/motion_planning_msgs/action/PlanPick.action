@@ -2,7 +2,7 @@
 geometry_msgs/PoseStamped object_pose
 ---
 #result definition
-bool success
+int32 success
 ---
 #feedback
 # INITIAL=0

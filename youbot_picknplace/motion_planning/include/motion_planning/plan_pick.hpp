@@ -57,6 +57,7 @@ class PlanPickAction {
   motion_msgs::MoveToPostureGoal arm_posture_goal_;
 
   double approach_dist_;
+  double min_grasp_dist_;
 
 };
 geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt);
