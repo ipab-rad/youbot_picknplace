@@ -19,15 +19,20 @@ int main (int argc, char **argv) {
     return 0;
   }
 
+  bool going = true;
+  bool success = false;
 
-  bool done_nav = false;
+
+  // states:
+  // 0 listen area of interest
+  // 1 object detection
+  // 2 pick
+  // 3 place
+  // 4 move closer
+  int state = 0;
   if (atoi(argv[1])==0)
-    done_nav = true;
+    state = 1;
 
-  bool done_detect = false;
-  bool done_pick = false;
-  bool done_place = false;
-  bool done_home = false;
   // action lib clients
   actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac("motion_planning/plan_listen_aoi", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac("motion_planning/plan_detection", true);
@@ -37,107 +42,95 @@ int main (int argc, char **argv) {
   
   // START
 
-  // NAVIGATION by AREA OF INTEREST LISTENING
-  if(!done_nav){
-    ROS_INFO("Waiting for area of interest action server to start.");
-    // wait for the action server to start
-    nav_ac.waitForServer(); //will wait for infinite time
+  while(going)
+  {
 
-    ROS_INFO("Area of interest Action server started, sending goal.");
-    // send a goal to the action
-    motion_planning_msgs::PlanListenAoiGoal nav_goal;
-    nav_goal.find = true;
+    // NAVIGATION by AREA OF INTEREST LISTENING
+    if(state==0){
+      ROS_INFO("Waiting for area of interest action server to start.");
+      // wait for the action server to start
+      nav_ac.waitForServer(); //will wait for infinite time
 
-    nav_ac.sendGoal(nav_goal);
+      ROS_INFO("Area of interest Action server started, sending goal.");
+      // send a goal to the action
+      motion_planning_msgs::PlanListenAoiGoal nav_goal;
+      nav_goal.find = true;
 
-    nav_ac.waitForResult();
-    if (nav_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      done_nav = true;
+      nav_ac.sendGoal(nav_goal);
+
+      nav_ac.waitForResult();
+      if (nav_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        state = 1;
+      else
+        going = false;
     }
-  }
+    else if(state==1){
 
-  // OBJECT DETECTION
-  if(done_nav){
-    ROS_INFO("Waiting for Detect action server to start.");
-    // wait for the action server to start
-    obj_ac.waitForServer(); //will wait for infinite time
+      ROS_INFO("Waiting for Detect action server to start.");
+      // wait for the action server to start
+      obj_ac.waitForServer(); //will wait for infinite time
 
-    ROS_INFO("Detect Action server started, sending goal.");
-    // send a goal to the action
-    motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
-    obj_goal.detect = true;
+      ROS_INFO("Detect Action server started, sending goal.");
+      // send a goal to the action
+      motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
+      obj_goal.detect = true;
 
-    obj_ac.sendGoal(obj_goal);
+      obj_ac.sendGoal(obj_goal);
 
-    obj_ac.waitForResult();
-    if (obj_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      done_detect = true;
+      obj_ac.waitForResult();
+      if (obj_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        state = 2;
+      else
+        going = false;
     }
-  }
+    else if(state==2){
+      // PICK
 
-  if (done_detect) {
-    // PICK
+      ROS_INFO("Waiting for Pick action server to start.");
+      // wait for the action server to start
+      pick_ac.waitForServer(); //will wait for infinite time
 
-    ROS_INFO("Waiting for Pick action server to start.");
-    // wait for the action server to start
-    pick_ac.waitForServer(); //will wait for infinite time
+      ROS_INFO("Pick Action server started, sending goal.");
+      // send a goal to the action
+      motion_planning_msgs::PlanPickGoal pick_goal;
 
-    ROS_INFO("Pick Action server started, sending goal.");
-    // send a goal to the action
-    motion_planning_msgs::PlanPickGoal pick_goal;
+      pick_goal.object_pose = obj_ac.getResult()->pose;
 
-    // TEST
-    // geometry_msgs::PoseStamped target_pose;
-    // target_pose.header.frame_id = "base_footprint";
-    // geometry_msgs::Quaternion quat;
-    // quat = tf::createQuaternionMsgFromRollPitchYaw(-3.129, 0.0549, 1.686);
-    // target_pose.pose.orientation.x = quat.x;
-    // target_pose.pose.orientation.y = quat.y;
-    // target_pose.pose.orientation.z = quat.z;
-    // target_pose.pose.orientation.w = quat.w;
-    // ROS_INFO("Quaternion info- x: %f  y: %f  z: %f  w: %f", quat.x, quat.y, quat.z, quat.w);
-    // target_pose.pose.poition.x = 0.12;
-    // target_pose.pose.position.y = -0.25;
-    // target_pose.pose.position.z = 0.0;
-    // pick_goal.object_pose = target_pose;
+      pick_ac.sendGoal(pick_goal);
 
-    pick_goal.object_pose = obj_ac.getResult()->pose;
-
-    pick_ac.sendGoal(pick_goal);
-
-    pick_ac.waitForResult();
-    if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      done_pick = true;
+      pick_ac.waitForResult();
+      if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        state = 3;
+      else
+        going = false;
     }
-  }
+    else if(state==3){
+      // PLACE
+      ROS_INFO("Waiting for Place server to start.");
+      // wait for the action server to start
+      place_ac.waitForServer(); //will wait for infinite time
 
+      ROS_INFO("Place Action server started, sending goal.");
+      // send a goal to the action
+      motion_planning_msgs::PlanPlaceGoal place_goal;
+      place_goal.place_object = true;
 
-  if (done_pick) {
-    // PLACE
-    ROS_INFO("Waiting for Place server to start.");
-    // wait for the action server to start
-    place_ac.waitForServer(); //will wait for infinite time
-
-    ROS_INFO("Place Action server started, sending goal.");
-    // send a goal to the action
-    motion_planning_msgs::PlanPlaceGoal place_goal;
-    place_goal.place_object = true;
-
-
-    place_ac.sendGoal(place_goal);
-    place_ac.waitForResult();
-    if (place_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      done_place = true;
+      place_ac.sendGoal(place_goal);
+      place_ac.waitForResult();
+      if (place_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        success = true;
+      going = false;
     }
-  }
+  }// end while going
 
-  if (done_place) {
+  if (success) {
     ROS_INFO("Task successful!");
   } else {
-    ROS_INFO("Task failed!");
+    ROS_INFO("Task failed! At state: %d", state);
   }
 
-  // PLACE
+  // DEFAULT BEHAVIOUR AT END OF EXECUTION
+  // GO HOME
   ROS_INFO("Waiting for Go home server to start.");
   // wait for the action server to start
   home_ac.waitForServer(); //will wait for infinite time
@@ -148,19 +141,12 @@ int main (int argc, char **argv) {
   motion_planning_msgs::PlanGoHomeGoal home_goal;
   home_goal.go_home = true;
 
-
   home_ac.sendGoal(home_goal);
   home_ac.waitForResult();
-  if (home_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    done_home = true;
-  }
-
-
-  if (done_home) {
+  if (home_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
     ROS_INFO("Done!");
-  } else {
+  else
     ROS_INFO("Failed going to home positon");
-  }
 
   //exit
   return 0;
