@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
  actionlib
  roscpp
  motion_planning_msgs
+ move_base_msgs
+ geometry_msgs
  cmake_modules
  )
 
@@ -82,13 +84,19 @@ include_directories(SYSTEM ${Eigen_INCLUDE_DIRS})
 add_executable(agent
   src/agent.cpp
 )
-
+add_executable(agent_nav
+  src/agent_ros_nav.cpp
+)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(agent motion_planning_msgs)
+add_dependencies(agent_nav move_base_msgs geometry_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(agent
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(agent_nav
   ${catkin_LIBRARIES}
 )
 
