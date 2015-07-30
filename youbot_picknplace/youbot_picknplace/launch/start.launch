@@ -1,14 +1,21 @@
 <?xml version="1.0"?>
 
 <!--
-This launch file starts the youBot driver and the robot joint state publisher. MoveIt group is also launched.
+This launch file starts a series of nodes for the Picknplace project.
+MoveIt and motion planning nodes are initialized.
 
 -->
 
 <launch>
+	<!-- move it interface -->
+    <include file="$(find youbot_moveit_config)/launch/move_group.launch">
+  		<arg name="publish_monitored_planning_scene" value="true" />
+ 	</include>
 
-	<!-- robot publishers -->
-	<include file="$(find youbot_driver_ros_interface)/launch/youbot_driver.launch" />
-    <include file="$(find youbot_driver_ros_interface)/launch/youbot_joint_state_publisher.launch" />
+    <!-- launch motion planning and other necessary nodes -->
+    <include file="$(find youbot_picknplace)/launch/motion_planning.launch" />
+
+    <!-- launch gazebo world -->
+    <!-- <include file="$(find youbot_picknplace)/launch/camera.launch" /> -->
 
 </launch>

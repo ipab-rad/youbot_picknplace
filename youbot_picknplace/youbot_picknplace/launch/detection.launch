@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<!--
+This launch file starts the object detection node.
+
+-->
+
+<launch>
+
+    <!-- launch detection -->
+    <include file="$(find sensing)/launch/object_detection.launch" />
+
+</launch>

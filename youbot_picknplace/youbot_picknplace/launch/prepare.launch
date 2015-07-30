@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<!--
+This launch file starts the youBot driver and the robot joint state publisher. MoveIt group is also launched.
+
+-->
+
+<launch>
+
+	<!-- robot publishers -->
+  <param name="$(env ROBOT_NAME)/tf_prefix" value="$(env ROBOT_NAME)" />
+
+	<include file="$(find youbot_driver_ros_interface)/launch/youbot_driver.launch" ns="$(env ROBOT_NAME)"/>
+  <include file="$(find youbot_driver_ros_interface)/launch/youbot_joint_state_publisher.launch" ns="$(env ROBOT_NAME)"/>
+
+</launch>
