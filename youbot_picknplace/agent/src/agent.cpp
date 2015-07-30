@@ -34,12 +34,12 @@ int main (int argc, char **argv) {
 
   char *s = std::getenv("ROBOT_NAME");
   // action lib clients
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac(std::string(s) + "motion_planning/plan_listen_aoi", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac(std::string(s) + "motion_planning/plan_detection", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac(std::string(s) + "motion_planning/plan_pick", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac(std::string(s) + "motion_planning/plan_place", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac(std::string(s) + "motion_planning/plan_go_home", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachObjectAction> approach_ac(std::string(s) + "motion_planning/plan_approach_object", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac(std::string(s) + "/motion_planning/plan_listen_aoi", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac(std::string(s) + "/motion_planning/plan_detection", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac(std::string(s) + "/motion_planning/plan_pick", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac(std::string(s) + "/motion_planning/plan_place", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac(std::string(s) + "/motion_planning/plan_go_home", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachObjectAction> approach_ac(std::string(s) + "/motion_planning/plan_approach_object", true);
 
   // START
 

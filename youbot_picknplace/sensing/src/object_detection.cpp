@@ -93,7 +93,7 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
       try {
         geometry_msgs::PoseStamped pin;
         char *s = std::getenv("ROBOT_NAME");
-        pin.header.frame_id = std::string(s) + object.pose.header.frame_id;
+        pin.header.frame_id = std::string(s) + "/" + object.pose.header.frame_id;
         pin.header.stamp = ros::Time(0);
         pin.pose = obj_pose;
         geometry_msgs::PoseStamped pout;
