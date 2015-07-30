@@ -89,19 +89,20 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
     const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
 
     ROS_INFO("Object was detected. With confidence: %f", object.confidence);
-    if (object.confidence>0.95){
+    if (object.confidence > 0.95) {
       try {
         geometry_msgs::PoseStamped pin;
-        pin.header.frame_id = object.pose.header.frame_id;
+        char *s = std::getenv("ROBOT_NAME");
+        pin.header.frame_id = std::string(s) + object.pose.header.frame_id;
         pin.header.stamp = ros::Time(0);
         pin.pose = obj_pose;
         geometry_msgs::PoseStamped pout;
 
-        listener.waitForTransform("/base_footprint", object.pose.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-        listener.transformPose("/base_footprint", pin, pout);
+        listener.waitForTransform(std::string(s) + "/base_footprint", pin.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+        listener.transformPose(std::string(s) + "/base_footprint", pin, pout);
         ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
 
-        if (validateObject(pout.pose.position)){
+        if (validateObject(pout.pose.position)) {
           detect_ = false;
           object_validated_ = true;
         }
@@ -121,15 +122,15 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
 // if an object does not pass the similarity test it will reset the validations counter
 // if there have been 'required_validations_' validations it returns true
 // false otherwise
-bool DetectObjectAction::validateObject(geometry_msgs::Point point){
-  if (!checkSimilarity(point.x,object_pose_.pose.position.x, sim_threshold_)
-    || !checkSimilarity(point.y,object_pose_.pose.position.y, sim_threshold_)
-    || !checkSimilarity(point.z,object_pose_.pose.position.z, sim_threshold_)){
+bool DetectObjectAction::validateObject(geometry_msgs::Point point) {
+  if (!checkSimilarity(point.x, object_pose_.pose.position.x, sim_threshold_)
+      || !checkSimilarity(point.y, object_pose_.pose.position.y, sim_threshold_)
+      || !checkSimilarity(point.z, object_pose_.pose.position.z, sim_threshold_)) {
     validation_count_ = 0;
     return false;
   }
   validation_count_++;
-  ROS_INFO("Similar object position has been received. Validation count at: %d",validation_count_);
+  ROS_INFO("Similar object position has been received. Validation count at: %d", validation_count_);
 
   if (validation_count_ == required_validations_)
     return true;
@@ -139,8 +140,8 @@ bool DetectObjectAction::validateObject(geometry_msgs::Point point){
 
 // returns true if it satisfies the similarity criteria
 // false otherwise
-bool checkSimilarity(double p1, double p2, double threshold){
-  if (fabs(p1-p2)<threshold)
+bool checkSimilarity(double p1, double p2, double threshold) {
+  if (fabs(p1 - p2) < threshold)
     return true;
   else
     return false;

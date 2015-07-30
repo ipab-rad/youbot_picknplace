@@ -16,7 +16,7 @@ MoveGripperAction::MoveGripperAction(ros::NodeHandle nh, std::string name) :
   as_.registerPreemptCallback(boost::bind(&MoveGripperAction::preemptCB, this));
 
   // use gripper topic to send commands
-  gripper_topic_ = "/arm_1/gripper_controller/position_command";
+  gripper_topic_ = "/youbot_1/arm_1/gripper_controller/position_command";
   gripper_topic_sim_ = "/arm_1/gripper_controller/command";
   gripper_pub_ =
     nh_.advertise<brics_actuator::JointPositions>(gripper_topic_, 10, true);

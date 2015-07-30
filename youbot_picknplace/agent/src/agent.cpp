@@ -13,7 +13,7 @@
 int main (int argc, char **argv) {
   ros::init(argc, argv, "agent");
 
-  if(argc!=2){
+  if (argc != 2) {
     ROS_INFO("Please provide one argument: 1=motion 0=no motion");
     return 0;
   }
@@ -29,24 +29,24 @@ int main (int argc, char **argv) {
   // 3 place
   // 4 move closer
   int state = 0;
-  if (atoi(argv[1])==0)
+  if (atoi(argv[1]) == 0)
     state = 1;
 
+  char *s = std::getenv("ROBOT_NAME");
   // action lib clients
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac("motion_planning/plan_listen_aoi", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac("motion_planning/plan_detection", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac("motion_planning/plan_pick", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac("motion_planning/plan_place", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac("motion_planning/plan_go_home", true);
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachObjectAction> approach_ac("motion_planning/plan_approach_object", true);
-  
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac(std::string(s) + "motion_planning/plan_listen_aoi", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac(std::string(s) + "motion_planning/plan_detection", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac(std::string(s) + "motion_planning/plan_pick", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac(std::string(s) + "motion_planning/plan_place", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac(std::string(s) + "motion_planning/plan_go_home", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachObjectAction> approach_ac(std::string(s) + "motion_planning/plan_approach_object", true);
+
   // START
 
-  while(going)
-  {
+  while (going) {
 
     // NAVIGATION by AREA OF INTEREST LISTENING
-    if(state==0){
+    if (state == 0) {
       ROS_INFO("Waiting for area of interest action server to start.");
       // wait for the action server to start
       nav_ac.waitForServer(); //will wait for infinite time
@@ -63,8 +63,7 @@ int main (int argc, char **argv) {
         state = 1;
       else
         going = false;
-    }
-    else if(state==1){
+    } else if (state == 1) {
 
       ROS_INFO("Waiting for Detect action server to start.");
       // wait for the action server to start
@@ -82,8 +81,7 @@ int main (int argc, char **argv) {
         state = 2;
       else
         going = false;
-    }
-    else if(state==2){
+    } else if (state == 2) {
       // PICK
 
       ROS_INFO("Waiting for Pick action server to start.");
@@ -101,15 +99,13 @@ int main (int argc, char **argv) {
       pick_ac.waitForResult();
       if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
         state = 3;
-      else if (pick_ac.getResult()->success==-2){
+      else if (pick_ac.getResult()->success == -2) {
         ROS_INFO("Out of reach. Suggested movement from Pick (%f,%f,0.0)"
-          ,pick_ac.getResult()->suggestion.x, pick_ac.getResult()->suggestion.y);
+                 , pick_ac.getResult()->suggestion.x, pick_ac.getResult()->suggestion.y);
         state = 4;
-      }
-      else
+      } else
         going = false;
-    }
-    else if(state==3){
+    } else if (state == 3) {
       // PLACE
       ROS_INFO("Waiting for Place server to start.");
       // wait for the action server to start
@@ -125,8 +121,7 @@ int main (int argc, char **argv) {
       if (place_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
         success = true;
       going = false;
-    }
-    else if(state==4){
+    } else if (state == 4) {
       // APPROACH NEARBY (OUT OF REACH) OBJECT
       ROS_INFO("Waiting for Approach Object server to start.");
       // wait for the action server to start

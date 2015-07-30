@@ -7,13 +7,17 @@ MoveIt and motion planning nodes are initialized.
 -->
 
 <launch>
+      <node pkg="tf" type="static_transform_publisher" name="base_frame_bc"
+      args="0 0 0 0 0 0 $(env ROBOT_NAME)/base_footprint base_footprint 1" />
+
+
 	<!-- move it interface -->
-    <include file="$(find youbot_moveit_config)/launch/move_group.launch">
+    <include file="$(find youbot_moveit_config)/launch/move_group.launch" ns="$(env ROBOT_NAME)">
   		<arg name="publish_monitored_planning_scene" value="true" />
  	</include>
 
     <!-- launch motion planning and other necessary nodes -->
-    <include file="$(find youbot_picknplace)/launch/motion_planning.launch" />
+    <include file="$(find youbot_picknplace)/launch/motion_planning.launch" ns="$(env ROBOT_NAME)"/>
 
     <!-- launch gazebo world -->
     <!-- <include file="$(find youbot_picknplace)/launch/camera.launch" /> -->

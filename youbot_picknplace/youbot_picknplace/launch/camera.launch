@@ -7,8 +7,9 @@ This launch file starts a node that interfaces with the ASUS Xtion camera.
 <launch>
 
     <!-- start xtion -->
-    <include file="$(find openni2_launch)/launch/openni2.launch">
+    <include file="$(find openni2_launch)/launch/openni2.launch" ns="$(env ROBOT_NAME)">
       <arg name="camera" value="arm_cam3d" />
+      <arg name="tf_prefix" value="$(env ROBOT_NAME)" />
       <arg name="rgb_frame_id"   value="arm_cam3d_rgb_optical_frame" />
       <arg name="depth_frame_id" value="arm_cam3d_depth_optical_frame" />
       <arg name="depth_registration" value="true" />
