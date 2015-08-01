@@ -47,7 +47,7 @@ class PlanListenAoiAction {
   // navigation client
   actionlib::SimpleActionClient<navigation_msgs::MoveToPositionAction> ac_move_;
 
-  
+
 
   // message goals
   navigation_msgs::MoveToPositionGoal position_goal_;
@@ -60,6 +60,6 @@ class PlanListenAoiAction {
   bool timed_out_;
 
 };
-
+geometry_msgs::Point getApproachablePosition(geometry_msgs::Point aoi);
 
 #endif /* PLAN_LISTEN_AOI_SERVER_HPP */
