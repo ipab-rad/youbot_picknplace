@@ -17,8 +17,8 @@ int main (int argc, char **argv) {
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> ac("motion_planning/plan_pick", true);
-  ros::ServiceClient pose_c = n.serviceClient<motion_msgs::GripperPose>("motion/gripper_pose");
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> ac("youbot_1/motion_planning/plan_pick", true);
+  ros::ServiceClient pose_c = n.serviceClient<motion_msgs::GripperPose>("youbot_1/motion/gripper_pose");
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
@@ -28,9 +28,9 @@ int main (int argc, char **argv) {
   // send a goal to the action
   motion_planning_msgs::PlanPickGoal goal;
   geometry_msgs::PoseStamped target_pose;
-  target_pose.header.frame_id = "base_footprint";
+  target_pose.header.frame_id = "youbot_1/base_footprint";
 
-  if (argc == 2){
+  if (argc == 2) {
     int command = atoi(argv[1]);
     // simulate some cube poses wrt to base frame
     if (command == 1) {
@@ -64,8 +64,7 @@ int main (int argc, char **argv) {
       target_pose.pose.position.z = 0.001;
       target_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-0.41, 0.048, -1.97);
     }
-  }
-  else{
+  } else {
     target_pose.pose.position.x = atof(argv[1]);
     target_pose.pose.position.y = atof(argv[2]);
     target_pose.pose.position.z = atof(argv[3]);
