@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<!--
+This launch file starts a broadcaster linking the origins of the youbot as to replicate their initial positions
+-->
+
+<launch>
+	<node pkg="tf" type="static_transform_publisher" name="youbots_broadcaster" args="-2 1 0 0 0 0 youbot_4/odom youbot_3/odom 100" />
+</launch>

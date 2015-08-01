@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
  move_base_msgs
  geometry_msgs
  cmake_modules
+ tf
  )
 
 #######################################
@@ -54,7 +55,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES agent
-  CATKIN_DEPENDS actionlib roscpp
+  CATKIN_DEPENDS actionlib roscpp tf
 #  DEPENDS system_lib
 )
 
