@@ -14,7 +14,9 @@
 nav_msgs::OccupancyGrid costmap_;
 bool received_costmap_ = false;
 
-void stopYoubot(ros::Publisher pub){
+// stops youbot
+// publishes 10 msgs over a 1s period
+void stopYoubot(ros::Publisher pub) {
   // stop msg Twist
   geometry_msgs::Twist stop_msg;
   stop_msg.linear.x = 0.0;
@@ -26,21 +28,23 @@ void stopYoubot(ros::Publisher pub){
 
   ros::Rate r(10);
 
-  for(int i=0;i<10;i++){
+  for (int i = 0; i < 10; i++) {
     pub.publish(stop_msg);
     ros::spinOnce();
     r.sleep();
   }
 }
 
-void processMap(){
+// processes costmap to find area(s) of interest
+// identifies maxima that have surrounding free space
+void processMap() {
   size_t size = costmap_.data.size();
 
   ROS_INFO("Cell count of costmap: %lu", size);
   ROS_INFO("Width %d", costmap_.info.width);
   ROS_INFO("Height %d", costmap_.info.height);
 
-  int count=0;
+  int count = 0;
   int width = costmap_.info.width;
   int height = costmap_.info.height;
   double resolution = costmap_.info.resolution;
@@ -52,7 +56,7 @@ void processMap(){
   bool local_max = false;
   count = 0;
 
-  // last accepted Area of Interest 
+  // last accepted Area of Interest
   int last_i = -1;
   int last_j = -1;
   double sameAoiThresh = 10.0; // cells
@@ -63,27 +67,26 @@ void processMap(){
   double best_dist = 1000.0;
 
   // finding local maxima points
-  for(int i=offset; i < (width - offset); i++){
-    for(int j=offset; j < (height - offset); j++){
-      index = width*i + j;
+  for (int i = offset; i < (width - offset); i++) {
+    for (int j = offset; j < (height - offset); j++) {
+      index = width * i + j;
 
-      if (costmap_.data[index]==100)
-      {
-        local_max = costmap_.data[width*(i + offset) + j] == thresh && costmap_.data[width*(i - offset) + j] == thresh 
-          && costmap_.data[width*i + j + offset] == thresh && costmap_.data[width*i + j - offset] == thresh;
-        sameAoi = sqrt(pow(i-last_i,2)+pow(j-last_j,2))<sameAoiThresh;
-        if(local_max && !sameAoi){
-          ROS_INFO("Found AOI at (%d,%d)",i,j);
+      if (costmap_.data[index] == 100) {
+        local_max = costmap_.data[width * (i + offset) + j] == thresh && costmap_.data[width * (i - offset) + j] == thresh
+                    && costmap_.data[width * i + j + offset] == thresh && costmap_.data[width * i + j - offset] == thresh;
+        sameAoi = sqrt(pow(i - last_i, 2) + pow(j - last_j, 2)) < sameAoiThresh;
+        if (local_max && !sameAoi) {
+          ROS_INFO("Found AOI at (%d,%d)", i, j);
           last_i = i;
           last_j = j;
           count++;
           ROS_INFO("AOI info:");
-          ROS_INFO("X offset: %f",(j-width/2)*resolution);
-          ROS_INFO("Y offset: %f",(i-width/2)*resolution);
-          if(sqrt(pow(i-width/2,2)+pow(j-width/2,2))<best_dist){
+          ROS_INFO("X offset: %f", (j - width / 2)*resolution);
+          ROS_INFO("Y offset: %f", (i - width / 2)*resolution);
+          if (sqrt(pow(i - width / 2, 2) + pow(j - width / 2, 2)) < best_dist) {
             best_i = i;
             best_j = j;
-            best_dist = sqrt(pow(i-width/2,2)+pow(j-width/2,2));
+            best_dist = sqrt(pow(i - width / 2, 2) + pow(j - width / 2, 2));
           }
         }
       }
@@ -92,8 +95,8 @@ void processMap(){
   ROS_INFO("costmap local max count: %d", count);
 
 
-  // TODO find transformation to manipulating youbot
-  if(count>0){
+  // find transformation to manipulating youbot
+  if (count > 0) {
     try {
       tf::StampedTransform stransform;
       tf::TransformListener listener;
@@ -106,8 +109,8 @@ void processMap(){
       orientation.z = 0.0;
       orientation.w = 1.0;
       pin.pose.orientation = orientation;
-      pin.pose.position.x = (best_j-width/2)*resolution;
-      pin.pose.position.y = (best_i-width/2)*resolution;
+      pin.pose.position.x = (best_j - width / 2) * resolution;
+      pin.pose.position.y = (best_i - width / 2) * resolution;
       geometry_msgs::PoseStamped pout;
 
       listener.waitForTransform("/youbot_3/base_footprint", pin.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
@@ -122,7 +125,8 @@ void processMap(){
 
 }
 
-void costmapCB(const nav_msgs::OccupancyGrid::ConstPtr& msg){
+// stores a copy of the costmap
+void costmapCB(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
   ROS_INFO("Costmap msg received");
   costmap_ = (*msg);
   ROS_INFO("Captured origin: (%f,%f)", costmap_.info.origin.position.x, costmap_.info.origin.position.y);
@@ -136,7 +140,7 @@ int main (int argc, char **argv) {
   ros::NodeHandle n;
 
 
-  if(argc!=2)
+  if (argc != 2)
     return 0;
   bool going = true;
   bool success = false;
@@ -147,7 +151,7 @@ int main (int argc, char **argv) {
   // 2 move back
   // 3 move right
   int state = 0;
-  if(atoi(argv[1])==0)
+  if (atoi(argv[1]) == 0)
     state = 4;
 
   // action lib client
@@ -175,11 +179,10 @@ int main (int argc, char **argv) {
   ros::Rate r(10);
 
   // START
-  while(ros::ok() && going)
-  {
+  while (ros::ok() && going) {
 
     // NAVIGATION
-    if(state==0){
+    if (state == 0) {
       // go forward 1m
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = "youbot_4/base_footprint";
@@ -193,14 +196,12 @@ int main (int argc, char **argv) {
       move_ac.waitForResult();
       stopYoubot(nav_pub_);
 
-      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         state = 1;
         received_costmap_ = false;
-      }
-      else
+      } else
         going = false;
-    }
-    else if(state==1){
+    } else if (state == 1) {
       // move left 1m
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = "youbot_4/base_footprint";
@@ -220,8 +221,7 @@ int main (int argc, char **argv) {
       else
         going = false;
 
-    }
-    else if(state==2){
+    } else if (state == 2) {
       // move back 1m
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = "youbot_4/base_footprint";
@@ -240,8 +240,7 @@ int main (int argc, char **argv) {
         state = 3;
       else
         going = false;
-    }
-    else if(state==3){
+    } else if (state == 3) {
       // move back 1m
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = "youbot_4/base_footprint";
@@ -256,15 +255,13 @@ int main (int argc, char **argv) {
       move_ac.waitForResult();
       stopYoubot(nav_pub_);
 
-      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         state = 4;
         received_costmap_ = false;
-      }
-      else
+      } else
         going = false;
-    }
-    else if(state==4){
-      if(received_costmap_){
+    } else if (state == 4) {
+      if (received_costmap_) {
         success = true;
         going = false;
       }
@@ -278,6 +275,7 @@ int main (int argc, char **argv) {
 
   // processing costmap
   processMap();
+  // TODO from AOI found, publish to areas of interest topic
 
   if (success) {
     ROS_INFO("Task successful!");
