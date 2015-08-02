@@ -17,8 +17,8 @@ int main (int argc, char **argv) {
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> ac("youbot_1/motion_planning/plan_pick", true);
-  ros::ServiceClient pose_c = n.serviceClient<motion_msgs::GripperPose>("youbot_1/motion/gripper_pose");
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> ac("youbot_3/motion_planning/plan_pick", true);
+  ros::ServiceClient pose_c = n.serviceClient<motion_msgs::GripperPose>("youbot_3/motion/gripper_pose");
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start

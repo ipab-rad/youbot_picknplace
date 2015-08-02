@@ -3,20 +3,19 @@
 #include <actionlib/client/terminal_state.h>
 #include <motion_msgs/MoveToPostureAction.h>
 
- //tf
+//tf
 #include <tf/transform_datatypes.h>
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
   ros::init(argc, argv, "test_movetoposture");
 
-  if(argc!=2){
+  if (argc != 2) {
     ROS_INFO("Usage: argument1=desired posture");
     return 0;
   }
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac("motion/move_to_posture", true);
+  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac("youbot_3/motion/move_to_posture", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
