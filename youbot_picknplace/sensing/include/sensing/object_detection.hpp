@@ -50,6 +50,9 @@ class DetectObjectAction {
   bool detect_;
 
   // object detection
+  // tf::StampedTransform stransform_;
+  tf::TransformListener listener_;
+
   ros::Subscriber object_sub_ ;
   bool object_found_;
   bool object_validated_;
@@ -57,6 +60,8 @@ class DetectObjectAction {
   int required_validations_;
   double sim_threshold_;
 
+  // youbot name
+  std::string youbot_;
 
 };
 

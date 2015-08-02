@@ -43,6 +43,8 @@ void PlanObjectDetectionAction::executeCB() {
   feedback_.curr_state = 1;
   as_.publishFeedback(feedback_);
 
+  int detection_time = 30;
+
 
   //  states:
   // 0 check front
@@ -80,7 +82,7 @@ void PlanObjectDetectionAction::executeCB() {
         detect_ = true;
         // start timer
         timed_out_ = false;
-        timer_ = nh_.createTimer(ros::Duration(20), &PlanObjectDetectionAction::timerCB, this, true);
+        timer_ = nh_.createTimer(ros::Duration(detection_time), &PlanObjectDetectionAction::timerCB, this, true);
       }
     }
 

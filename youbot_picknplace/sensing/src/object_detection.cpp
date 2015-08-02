@@ -23,8 +23,9 @@ DetectObjectAction::~DetectObjectAction(void) {
 
 void DetectObjectAction::init() {
   detect_ = false;
-  required_validations_ = 2;
+  required_validations_ = 1;
   sim_threshold_ = 0.01;
+  youbot_ = std::string(std::getenv("ROBOT_NAME"));
 }
 
 void DetectObjectAction::goalCB() {
@@ -44,7 +45,7 @@ void DetectObjectAction::executeCB() {
   object_validated_ = false;
   validation_count_ = 0;
 
-  ros::Rate r(10);
+  ros::Rate r(20);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
   feedback_.curr_state = 0;
   as_.publishFeedback(feedback_);
@@ -57,7 +58,6 @@ void DetectObjectAction::executeCB() {
     }
 
     if (object_found_ && object_validated_) {
-      result_.pose = object_pose_;
       going = false;
       success = true;
     }
@@ -70,6 +70,18 @@ void DetectObjectAction::executeCB() {
   as_.publishFeedback(feedback_);
 
   if (success) {
+    try {
+      geometry_msgs::PoseStamped pout;
+      listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+      listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
+      ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+      result_.pose = pout;
+
+    } catch (tf::TransformException ex) {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+    }
+
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {
@@ -83,38 +95,23 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
   // ROS_INFO("Object message received");
 
   if (msg->objects.size() == 1 && detect_) {
-    tf::StampedTransform stransform;
-    tf::TransformListener listener;
     const object_recognition_msgs::RecognizedObject& object = msg->objects[0];
     const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
 
     ROS_INFO("Object was detected. With confidence: %f", object.confidence);
     if (object.confidence > 0.95) {
-      try {
-        geometry_msgs::PoseStamped pin;
-        char *s = std::getenv("ROBOT_NAME");
-        pin.header.frame_id = std::string(s) + "/" + object.pose.header.frame_id;
-        pin.header.stamp = ros::Time(0);
-        pin.pose = obj_pose;
-        geometry_msgs::PoseStamped pout;
+      object_pose_.header.frame_id = youbot_ + "/" + object.pose.header.frame_id;
+      object_pose_.header.stamp = ros::Time(0);
+      object_pose_.pose = obj_pose;
+      object_found_ = true;
 
-        listener.waitForTransform(std::string(s) + "/base_footprint", pin.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-        listener.transformPose(std::string(s) + "/base_footprint", pin, pout);
-        ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
-
-        if (validateObject(pout.pose.position)) {
-          detect_ = false;
-          object_validated_ = true;
-        }
-
-        object_pose_ = pout;
-        object_found_ = true;
-
-      } catch (tf::TransformException ex) {
-        ROS_ERROR("%s", ex.what());
-        ros::Duration(1.0).sleep();
+      if (validateObject(obj_pose.position)) {
+        detect_ = false;
+        object_validated_ = true;
       }
     }
+  } else {
+    ROS_INFO("No objects detected.");
   }
 }
 
