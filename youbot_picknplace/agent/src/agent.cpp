@@ -93,7 +93,7 @@ int main (int argc, char **argv) {
       motion_planning_msgs::PlanPickGoal pick_goal;
 
       pick_goal.object_pose = obj_ac.getResult()->pose;
-
+      ROS_INFO("Object to pick is at (%f,%f).", pick_goal.object_pose.pose.position.x, pick_goal.object_pose.pose.position.y);
       pick_ac.sendGoal(pick_goal);
 
       pick_ac.waitForResult();
@@ -138,6 +138,7 @@ int main (int argc, char **argv) {
         state = 1;
       else
         going = false;
+      ros::Duration(3).sleep(); // sleep to allow for camera feed to flush
     }
   }// end while going
 
