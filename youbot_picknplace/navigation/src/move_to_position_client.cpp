@@ -5,12 +5,12 @@
 int main (int argc, char **argv) {
   ros::init(argc, argv, "test_movetoposition");
 
-  if (argc!=4)
+  if (argc != 4)
     return 0;
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<navigation_msgs::MoveToPositionAction> ac("navigation/move_to_position", true);
+  actionlib::SimpleActionClient<navigation_msgs::MoveToPositionAction> ac("youbot_3/navigation/move_to_position", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
@@ -26,7 +26,7 @@ int main (int argc, char **argv) {
   target_position.z = 0.0;
   goal.position = target_position;
 
-  if (atoi(argv[3])==1)
+  if (atoi(argv[3]) == 1)
     goal.relative = true;
   else
     goal.relative = false;

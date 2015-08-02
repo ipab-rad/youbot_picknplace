@@ -8,7 +8,7 @@ int main (int argc, char **argv) {
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> ac("sensing/object_detection", true);
+  actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> ac("youbot_3/sensing/object_detection", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start

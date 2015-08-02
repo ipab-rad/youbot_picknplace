@@ -11,7 +11,7 @@ int main (int argc, char **argv) {
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> ac("motion_planning/plan_detection", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> ac("youbot_3/motion_planning/plan_detection", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
