@@ -23,7 +23,7 @@ DetectObjectAction::~DetectObjectAction(void) {
 
 void DetectObjectAction::init() {
   detect_ = false;
-  required_validations_ = 1;
+  required_validations_ = 2;
   sim_threshold_ = 0.01;
   youbot_ = std::string(std::getenv("ROBOT_NAME"));
 }
@@ -71,6 +71,7 @@ void DetectObjectAction::executeCB() {
 
   if (success) {
     try {
+      object_pose_.header.stamp = ros::Time(0);
       geometry_msgs::PoseStamped pout;
       listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
       listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
