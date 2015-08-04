@@ -45,7 +45,14 @@ class DetectObjectAction {
 
   bool validateObject(geometry_msgs::Point point);
 
+  void timerCB(const ros::TimerEvent& event);
+
+
  private:
+  // timer for action timeout
+  ros::Timer timer_;
+  bool timed_out_;
+
   geometry_msgs::PoseStamped object_pose_;
   bool detect_;
 

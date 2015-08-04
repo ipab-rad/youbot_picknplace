@@ -32,6 +32,8 @@ void PlanApproachObjectAction::preemptCB() {
 
 void PlanApproachObjectAction::executeCB() {
   bool success = false;
+  bool going = true;
+
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
@@ -41,11 +43,28 @@ void PlanApproachObjectAction::executeCB() {
   position_goal_.relative = true;
   ROS_INFO("Navigating to object");
   ac_move_.sendGoal(position_goal_);
-  ac_move_.waitForResult();
 
-  if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    // success
-    success = true;
+  // base moving
+  while (going) {
+    if (as_.isPreemptRequested() || !ros::ok()) {
+      ROS_INFO("%s: Preempted", action_name_.c_str());
+      as_.setPreempted();
+      going = false;
+    }
+
+
+    if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      // success
+      success = true;
+      going = false;
+    } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+      // failed
+      success = false;
+      going = false;
+    }
+
+    ros::spinOnce();
+    r.sleep();
   }
 
   if (success) {

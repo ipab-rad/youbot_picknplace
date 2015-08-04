@@ -36,6 +36,10 @@ void PlanListenAoiAction::executeCB() {
   bool going = true;
   bool success = false;
   ros::Rate r(10);
+
+  // 1 base moving to object
+  // 0 listening for area of interest
+  int state = 0;
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
   timed_out_ = false;
@@ -51,20 +55,27 @@ void PlanListenAoiAction::executeCB() {
     }
 
     if (found_) {
-      // move to pose action
-      ac_move_.waitForServer();
-      position_goal_.position = getApproachablePosition(target_position_);
-      position_goal_.relative = true;
-      ROS_INFO("Approaching Area of Interest. Going to (%f,%f) relative to current position.",
-               position_goal_.position.x, position_goal_.position.y);
-      ac_move_.sendGoal(position_goal_);
-      ac_move_.waitForResult();
+      if (state == 0) {
+        // move to position action
+        ac_move_.waitForServer();
+        position_goal_.position = getApproachablePosition(target_position_);
+        position_goal_.relative = true;
+        ROS_INFO("Approaching Area of Interest. Going to (%f,%f) relative to current position.",
+                 position_goal_.position.x, position_goal_.position.y);
+        ac_move_.sendGoal(position_goal_);
+        state = 1;
 
-      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        // success
-        success = true;
+      } else if (state == 1) {
+        // base moving
+        if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+          // success
+          success = true;
+          going = false;
+        } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+          success = false;
+          going = false;
+        }
       }
-      going = false;
     }
 
     if (timed_out_) {

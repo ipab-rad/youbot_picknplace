@@ -47,8 +47,11 @@ void DetectObjectAction::executeCB() {
 
   ros::Rate r(20);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
-  feedback_.curr_state = 0;
-  as_.publishFeedback(feedback_);
+
+  int detection_time = 30;
+  timed_out_ = false;
+  timer_ = nh_.createTimer(ros::Duration(detection_time), &DetectObjectAction::timerCB, this, true);
+
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -62,12 +65,14 @@ void DetectObjectAction::executeCB() {
       success = true;
     }
 
+    if (timed_out_) {
+      going = false;
+      ROS_INFO("%s: Timed out", action_name_.c_str());
+    }
+
     ros::spinOnce();
     r.sleep();
   }
-
-  feedback_.curr_state = 3;
-  as_.publishFeedback(feedback_);
 
   if (success) {
     try {
@@ -89,6 +94,7 @@ void DetectObjectAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
+  timer_.stop();
 
 }
 
@@ -134,6 +140,10 @@ bool DetectObjectAction::validateObject(geometry_msgs::Point point) {
     return true;
   else
     return false;
+}
+
+void DetectObjectAction::timerCB(const ros::TimerEvent & event) {
+  timed_out_ = true;
 }
 
 // returns true if it satisfies the similarity criteria

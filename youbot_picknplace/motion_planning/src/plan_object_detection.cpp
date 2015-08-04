@@ -35,22 +35,20 @@ void PlanObjectDetectionAction::preemptCB() {
 void PlanObjectDetectionAction::executeCB() {
   bool going = true;
   bool success = false;
+  // moving state
+  bool moving = false;
+
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
-  feedback_.curr_state = 0;
-  as_.publishFeedback(feedback_);
-
-  feedback_.curr_state = 1;
-  as_.publishFeedback(feedback_);
-
-  int detection_time = 30;
-
 
   //  states:
   // 0 check front
   // 1 check right
   // 2 check left
+  // 3 end
   int state = 0;
+  int endstate = 3;
+
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -59,66 +57,59 @@ void PlanObjectDetectionAction::executeCB() {
       going = false;
     }
 
-    if (!detect_) {
-      if (state == 0)
-        posture_goal_.posture = "check_front";
-      else if (state == 1)
-        posture_goal_.posture = "check_right";
-      else if (state == 2)
-        posture_goal_.posture = "check_left";
-
-      // move to pose action
-      ac_move_.waitForServer();
-      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
-      ac_move_.sendGoal(posture_goal_);
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-      ac_move_.waitForResult();
+    // performing detection
+    if (detect_) {
+      if (detect_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        detect_ = false;
+        success = true;
+        going = false;
+      } else if (detect_ac_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        detect_ = false;
+        state++;
+        if (state == endstate) {
+          going = false;
+        }
+      }
+    }
+    // moving to detection position
+    else if (moving) {
+      // arm is moving
       if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         // send a goal to the obj detection action
         sensing_msgs::DetectObjectGoal detect_goal;
         detect_goal.detect = true;
         detect_ac_.sendGoal(detect_goal);
         detect_ = true;
+        moving = false;
         // start timer
-        timed_out_ = false;
-        timer_ = nh_.createTimer(ros::Duration(detection_time), &PlanObjectDetectionAction::timerCB, this, true);
-      }
-    }
-
-
-    // debug: monitor action
-    // ROS_INFO("Current State: %s\n", detect_ac_.getState().toString().c_str());
-    if (detect_) {
-      if (detect_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        detect_ = false;
-        success = true;
+      } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         going = false;
+        success = false;
+        moving = false;
       }
-    }
-
-    if (timed_out_) {
-      detect_ = false;
-      // send a goal to the obj detection action
-      sensing_msgs::DetectObjectGoal detect_goal;
-      detect_goal.detect = false;
-      detect_ac_.sendGoal(detect_goal);
-
-      if (state == 2) {
-        ROS_INFO("%s: Timed out", action_name_.c_str());
-        // terminate
-        going = false;
-
-      } else
-        state++;
+    } else if (state == 0) {
+      // move to initial detection position
+      posture_goal_.posture = "check_front";
+      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
+      ac_move_.sendGoal(posture_goal_);
+      moving = true;
+    } else if (state == 1) {
+      // check right detection position
+      posture_goal_.posture = "check_right";
+      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
+      ac_move_.sendGoal(posture_goal_);
+      moving = true;
+    } else if (state == 2) {
+      // check left detection position
+      posture_goal_.posture = "check_left";
+      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
+      ac_move_.sendGoal(posture_goal_);
+      moving = true;
     }
 
     ros::spinOnce();
     r.sleep();
   }
-
-  feedback_.curr_state = 2;
-  as_.publishFeedback(feedback_);
 
   if (success) {
     result_.success = success;

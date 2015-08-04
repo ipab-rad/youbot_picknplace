@@ -33,15 +33,17 @@ void PlanGoHomeAction::preemptCB() {
 void PlanGoHomeAction::executeCB() {
   bool going = true;
   bool success = false;
-  // states
-  // 0 initial
-  // 1 moved
-  int state = 0;
+
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
-  feedback_.curr_state = 0;
-  as_.publishFeedback(feedback_);
 
+  posture_goal_.posture = "folded";
+  // move to pose action
+  // ac_move_.waitForServer();
+  ROS_INFO("Moving to home position (initial)");
+  ac_move_.sendGoal(posture_goal_);
+
+  // arm moving
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
       ROS_INFO("%s: Preempted", action_name_.c_str());
@@ -49,23 +51,11 @@ void PlanGoHomeAction::executeCB() {
       going = false;
     }
 
-    if ( state == 0) {
-      // send a movement to pose goal to the action
-      posture_goal_.posture = "folded";
-      // move to pose action
-      ac_move_.waitForServer();
-      ROS_INFO("Moving to home position (initial)");
-
-      ac_move_.sendGoal(posture_goal_);
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-      ac_move_.waitForResult();
-      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
-        success = true;
-      } else {
-        success = false;
-      }
+    if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      success = true;
+      going = false;
+    } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+      success = false;
       going = false;
     }
 

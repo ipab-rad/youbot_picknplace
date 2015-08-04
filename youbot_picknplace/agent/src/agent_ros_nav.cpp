@@ -144,13 +144,17 @@ int main (int argc, char **argv) {
     return 0;
   bool going = true;
   bool success = false;
+  // moving state
+  bool moving = false;
 
   // states:
   // 0 move forward
   // 1 move left
   // 2 move back
   // 3 move right
+  // 4 end
   int state = 0;
+  int endstate = 4;
   if (atoi(argv[1]) == 0)
     state = 4;
 
@@ -182,7 +186,19 @@ int main (int argc, char **argv) {
   while (ros::ok() && going) {
 
     // NAVIGATION
-    if (state == 0) {
+    if (moving) {
+      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        stopYoubot(nav_pub_);
+        state++;
+        received_costmap_ = false;
+        moving = false;
+      } else if (move_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        stopYoubot(nav_pub_);
+        going = false;
+        moving = false;
+      }
+
+    } else if (state == 0) {
       // go forward 1m
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = "youbot_4/base_footprint";
@@ -191,16 +207,9 @@ int main (int argc, char **argv) {
       pose.pose.position.z = 0.0;
       pose.pose.orientation = base_orientation;
       mov_goal.target_pose = pose;
-
       move_ac.sendGoal(mov_goal);
-      move_ac.waitForResult();
-      stopYoubot(nav_pub_);
+      moving = true;
 
-      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
-        received_costmap_ = false;
-      } else
-        going = false;
     } else if (state == 1) {
       // move left 1m
       geometry_msgs::PoseStamped pose;
@@ -209,17 +218,9 @@ int main (int argc, char **argv) {
       pose.pose.position.y = movement_size;
       pose.pose.position.z = 0.0;
       pose.pose.orientation = base_orientation;
-
       mov_goal.target_pose = pose;
-
       move_ac.sendGoal(mov_goal);
-      move_ac.waitForResult();
-      stopYoubot(nav_pub_);
-
-      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        state = 2;
-      else
-        going = false;
+      moving = true;
 
     } else if (state == 2) {
       // move back 1m
@@ -229,17 +230,10 @@ int main (int argc, char **argv) {
       pose.pose.position.y = 0.0;
       pose.pose.position.z = 0.0;
       pose.pose.orientation = base_orientation;
-
       mov_goal.target_pose = pose;
-
       move_ac.sendGoal(mov_goal);
-      move_ac.waitForResult();
-      stopYoubot(nav_pub_);
+      moving = true;
 
-      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        state = 3;
-      else
-        going = false;
     } else if (state == 3) {
       // move back 1m
       geometry_msgs::PoseStamped pose;
@@ -248,19 +242,11 @@ int main (int argc, char **argv) {
       pose.pose.position.y = -movement_size;
       pose.pose.position.z = 0.0;
       pose.pose.orientation = base_orientation;
-
       mov_goal.target_pose = pose;
-
       move_ac.sendGoal(mov_goal);
-      move_ac.waitForResult();
-      stopYoubot(nav_pub_);
+      moving = true;
 
-      if (move_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 4;
-        received_costmap_ = false;
-      } else
-        going = false;
-    } else if (state == 4) {
+    } else if (state == endstate) {
       if (received_costmap_) {
         success = true;
         going = false;

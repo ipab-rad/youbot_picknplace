@@ -34,15 +34,16 @@ void PlanPlaceAction::preemptCB() {
 void PlanPlaceAction::executeCB() {
   bool going = true;
   bool success = false;
+  // moving state
+  bool moving = false;
+  bool moving_gripper = false;
+
   // states
-  // 0 initial
-  // 1 moved
-  // 2 placed
+  // 0 move arm
+  // 1 move gripper
   int state = 0;
   ros::Rate r(10);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
-  feedback_.curr_state = 0;
-  as_.publishFeedback(feedback_);
 
   while (going) {
     if (as_.isPreemptRequested() || !ros::ok()) {
@@ -51,41 +52,46 @@ void PlanPlaceAction::executeCB() {
       going = false;
     }
 
-    if ( state == 0) {
+    if (moving) {
+      // arm moving
+      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state++;
+        moving = false;
+      } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        going = false;
+        moving = false;
+      }
+    } else if (moving_gripper) {
+      // gripper moving
+      if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        success = true;
+        going = false;
+        moving_gripper = false;
+      } else if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        success = false;
+        going = false;
+        moving_gripper = false;
+      }
+    } else if (state == 0) {
       // send a movement to pose goal to the action
       posture_goal_.posture = "back_drop";
       // move to pose action
       ac_move_.waitForServer();
       ROS_INFO("Placing down object");
-
       ac_move_.sendGoal(posture_goal_);
-      feedback_.curr_state = 1;
-      as_.publishFeedback(feedback_);
-      ac_move_.waitForResult();
-      if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
-      }
+      moving = true;
     } else if (state == 1) {
       // open gripper action
       gripper_goal_.command = 1;
       ac_gripper_.waitForServer();
       ROS_INFO("Opening Gripper");
       ac_gripper_.sendGoal(gripper_goal_);
-      ac_gripper_.waitForResult();
-      if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        success = true;
-      } else {
-        success = false;
-      }
-      going = false;
+      moving_gripper = true;
     }
 
     ros::spinOnce();
     r.sleep();
   }
-
-  feedback_.curr_state = 2;
-  as_.publishFeedback(feedback_);
 
   if (success) {
     result_.success = true;
