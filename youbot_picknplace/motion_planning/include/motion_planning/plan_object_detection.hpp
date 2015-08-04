@@ -43,6 +43,7 @@ class PlanObjectDetectionAction {
  private:
 
   bool detect_;
+  int initial_state_;
   // detect action client
   actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> detect_ac_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_;

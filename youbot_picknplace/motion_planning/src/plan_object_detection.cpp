@@ -20,10 +20,11 @@ PlanObjectDetectionAction::~PlanObjectDetectionAction(void) {
 
 void PlanObjectDetectionAction::init() {
   detect_ = false;
+  initial_state_ = 0;
 }
 
 void PlanObjectDetectionAction::goalCB() {
-  as_.acceptNewGoal();
+  initial_state_ = as_.acceptNewGoal()->detect;
   this->executeCB();
 }
 
@@ -46,7 +47,7 @@ void PlanObjectDetectionAction::executeCB() {
   // 1 check right
   // 2 check left
   // 3 end
-  int state = 0;
+  int state = initial_state_;
   int endstate = 3;
 
 
@@ -114,6 +115,7 @@ void PlanObjectDetectionAction::executeCB() {
   if (success) {
     result_.success = success;
     result_.pose = detect_ac_.getResult()->pose;
+    result_.state = state;
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {

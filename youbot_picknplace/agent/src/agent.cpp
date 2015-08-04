@@ -41,6 +41,9 @@ int main (int argc, char **argv) {
     no_aoi = true;
   }
 
+  //
+  int detection_position = 0;
+
   char *s = std::getenv("ROBOT_NAME");
   // action lib clients
   actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac(std::string(s) + "/motion_planning/plan_listen_aoi", true);
@@ -78,19 +81,21 @@ int main (int argc, char **argv) {
       state = 1;
 
     } else if (state == 1) {
+      // TODO: improve logic here
+      //  issue being that state 1 may be the initial state and nav_ac may not have action running
       if (no_aoi) {
         obj_ac.waitForServer();
         ROS_INFO("Detect Action server started, sending goal.");
         // send a goal to the action
         motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
-        obj_goal.detect = true;
+        obj_goal.detect = detection_position;
         obj_ac.sendGoal(obj_goal);
         state = 2;
       } else if (nav_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         ROS_INFO("Detect Action server started, sending goal.");
         // send a goal to the action
         motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
-        obj_goal.detect = true;
+        obj_goal.detect = 0;
         obj_ac.sendGoal(obj_goal);
         state = 2;
       } else if (nav_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
@@ -98,6 +103,7 @@ int main (int argc, char **argv) {
       }
     } else if (state == 2) {
       if (obj_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        detection_position = obj_ac.getResult()->state;
         // PICK
         ROS_INFO("Waiting for Pick action server to start.");
         // wait for the action server to start

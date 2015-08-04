@@ -20,7 +20,7 @@ int main (int argc, char **argv) {
   ROS_INFO("Action server started, sending goal.");
   // send a goal to the action
   motion_planning_msgs::PlanObjectDetectionGoal goal;
-  goal.detect = true;
+  goal.detect = 0;
 
   ac.sendGoal(goal);
 

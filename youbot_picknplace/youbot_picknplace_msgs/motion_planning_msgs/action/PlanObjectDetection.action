@@ -1,9 +1,10 @@
 #goal definition
-bool detect
+int32 detect
 ---
 #result definition
 bool success
 geometry_msgs/PoseStamped pose
+int32 state
 ---
 #feedback
 # INITIAL=0
