@@ -8,7 +8,7 @@ MoveIt and motion planning nodes are initialized.
 
 <launch>
       <node pkg="tf" type="static_transform_publisher" name="base_frame_bc"
-      args="0 0 0 0 0 0 $(env ROBOT_NAME)/base_footprint base_footprint 1" />
+      args="0 0 0 0 0 0 $(env ROBOT_NAME)/base_footprint base_footprint 10" />
 
 
 	<!-- move it interface -->
