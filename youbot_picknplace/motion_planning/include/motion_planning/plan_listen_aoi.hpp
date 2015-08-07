@@ -34,8 +34,6 @@ class PlanListenAoiAction {
 
   void executeCB();
 
-  void timerCB(const ros::TimerEvent& event);
-
   void aoiCB(const geometry_msgs::Point::ConstPtr& msg);
 
 
@@ -43,23 +41,17 @@ class PlanListenAoiAction {
   // area of interest listener
   ros::Subscriber aoi_sub_;
   bool found_;
-  int waiting_time_;
+
   // navigation client
   actionlib::SimpleActionClient<navigation_msgs::MoveToPositionAction> ac_move_;
 
-
-
   // message goals
   navigation_msgs::MoveToPositionGoal position_goal_;
+
   // position goal
   geometry_msgs::Point target_position_;
-
-
-  // timer for action timeout
-  ros::Timer timer_;
-  bool timed_out_;
-
 };
+
 geometry_msgs::Point getApproachablePosition(geometry_msgs::Point aoi);
 
 #endif /* PLAN_LISTEN_AOI_SERVER_HPP */

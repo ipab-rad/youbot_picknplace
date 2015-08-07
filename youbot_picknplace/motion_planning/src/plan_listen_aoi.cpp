@@ -19,7 +19,6 @@ PlanListenAoiAction::~PlanListenAoiAction(void) {
 }
 
 void PlanListenAoiAction::init() {
-  waiting_time_ = 60;
 }
 
 void PlanListenAoiAction::goalCB() {
@@ -41,9 +40,6 @@ void PlanListenAoiAction::executeCB() {
   // 0 listening for area of interest
   int state = 0;
   ROS_INFO("Executing goal for %s", action_name_.c_str());
-
-  timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(waiting_time_), &PlanListenAoiAction::timerCB, this, true);
 
   found_ = false;
 
@@ -78,12 +74,6 @@ void PlanListenAoiAction::executeCB() {
       }
     }
 
-    if (timed_out_) {
-      ROS_INFO("%s: Timed out", action_name_.c_str());
-      // terminate
-      going = false;
-    }
-
     ros::spinOnce();
     r.sleep();
   }
@@ -98,10 +88,6 @@ void PlanListenAoiAction::executeCB() {
     as_.setAborted(result_);
   }
 
-}
-
-void PlanListenAoiAction::timerCB(const ros::TimerEvent & event) {
-  timed_out_ = true;
 }
 
 void PlanListenAoiAction::aoiCB(const geometry_msgs::Point::ConstPtr& msg) {
