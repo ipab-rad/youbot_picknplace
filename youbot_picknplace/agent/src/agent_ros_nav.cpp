@@ -127,7 +127,7 @@ std::vector<geometry_msgs::Point> processMap() {
 
 // stores a copy of the costmap
 void costmapCB(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
-  ROS_INFO("Costmap msg received");
+  // ROS_INFO("Costmap msg received");
   costmap_ = (*msg);
   received_costmap_ = true;
 }
