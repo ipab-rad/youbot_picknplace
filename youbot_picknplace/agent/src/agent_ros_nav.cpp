@@ -155,7 +155,7 @@ size_t promptUser(  std::vector<geometry_msgs::Point> aois) {
 }
 
 int main (int argc, char **argv) {
-  ros::init(argc, argv, "agent");
+  ros::init(argc, argv, "agent_nav");
   ros::NodeHandle n;
 
 
