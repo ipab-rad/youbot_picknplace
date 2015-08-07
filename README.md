@@ -54,13 +54,13 @@ git clone https://github.com/mas-group/youbot_simulation.git
     ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
-    rosrun object_recognition_core detection -c `rospack find youbot_picknplace`/sensing/conf/detection.table.ros.ork
+    rosrun object_recognition_core detection -c `rospack find sensing`/conf/detection.table.ros.ork
     ```
     - Object detection with Rviz visualization:
     ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
-    rosrun object_recognition_core detection -c  `rospack find youbot_picknplace`/sensing/conf/detection.object.ros.ork
+    rosrun object_recognition_core detection -c  `rospack find sensing`/conf/detection.object.ros.ork
     ```
 
     NOTE: more information on the usage and FAQS of the Tabletop pipeline can be found in
