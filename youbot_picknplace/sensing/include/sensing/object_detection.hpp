@@ -60,7 +60,7 @@ class DetectObjectAction {
   // tf::StampedTransform stransform_;
   tf::TransformListener listener_;
 
-  ros::Subscriber object_sub_ ;
+
   bool object_found_;
   bool object_validated_;
   int validation_count_;

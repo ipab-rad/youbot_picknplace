@@ -4,11 +4,7 @@
 DetectObjectAction::DetectObjectAction(ros::NodeHandle nh, std::string name) :
   nh_(nh),
   as_(nh_, name, false),
-  action_name_(name),
-  object_sub_(nh_.subscribe(
-                "/recognized_object_array",
-                1,
-                &DetectObjectAction::detectedCB, this)) {
+  action_name_(name) {
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&DetectObjectAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&DetectObjectAction::preemptCB, this));
@@ -45,6 +41,11 @@ void DetectObjectAction::executeCB() {
   object_validated_ = false;
   validation_count_ = 0;
 
+  // subscriber to recognized objects
+  ros::Subscriber object_sub_ = nh_.subscribe(
+                                  "/recognized_object_array",
+                                  1,
+                                  &DetectObjectAction::detectedCB, this);
   ros::Rate r(20);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
@@ -74,19 +75,22 @@ void DetectObjectAction::executeCB() {
     r.sleep();
   }
 
-  if (success) {
-    try {
-      object_pose_.header.stamp = ros::Time(0);
-      geometry_msgs::PoseStamped pout;
-      listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-      listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
-      ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
-      result_.pose = pout;
+  try {
+    object_pose_.header.stamp = ros::Time(0);
+    geometry_msgs::PoseStamped pout;
+    listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+    listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
+    ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+    result_.pose = pout;
 
-    } catch (tf::TransformException ex) {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
+  } catch (tf::TransformException ex) {
+    ROS_ERROR("%s", ex.what());
+    ros::Duration(1.0).sleep();
+    success = false;
+  }
+
+  if (success) {
+
 
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
@@ -99,9 +103,10 @@ void DetectObjectAction::executeCB() {
 }
 
 void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {
-  // ROS_INFO("Object message received");
+  int object_count = msg->objects.size();
+  ROS_INFO("%d objects detected", object_count);
 
-  if (msg->objects.size() == 1 && detect_) {
+  if (object_count == 1 && detect_) {
     const object_recognition_msgs::RecognizedObject& object = msg->objects[0];
     const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
 
@@ -117,8 +122,6 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
         object_validated_ = true;
       }
     }
-  } else {
-    ROS_INFO("No objects detected.");
   }
 }
 
