@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 
 <!--
-This launch file starts the object detection node.
+This launch file starts the camera and the object detection node.
 
 -->
 
 <launch>
+
+    <!-- launch camera -->
+    <include file="$(find youbot_picknplace)/launch/camera.launch" />
 
     <!-- launch detection -->
     <include file="$(find sensing)/launch/object_detection.launch" />
