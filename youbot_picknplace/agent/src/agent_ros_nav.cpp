@@ -10,6 +10,11 @@
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 
+#include <iostream>
+#include <string>
+#include <sstream>
+
+using namespace std;
 
 nav_msgs::OccupancyGrid costmap_;
 bool received_costmap_ = false;
@@ -37,14 +42,14 @@ void stopYoubot(ros::Publisher pub) {
 
 // processes costmap to find area(s) of interest
 // identifies maxima that have surrounding free space
-void processMap() {
+std::vector<geometry_msgs::Point> processMap() {
+  std::vector<geometry_msgs::Point> AOIs;
   size_t size = costmap_.data.size();
 
   ROS_INFO("Cell count of costmap: %lu", size);
   ROS_INFO("Width %d", costmap_.info.width);
   ROS_INFO("Height %d", costmap_.info.height);
 
-  int count = 0;
   int width = costmap_.info.width;
   int height = costmap_.info.height;
   double resolution = costmap_.info.resolution;
@@ -54,17 +59,12 @@ void processMap() {
   int offset = 20;
   int thresh = 0; // costmap value
   bool local_max = false;
-  count = 0;
 
   // last accepted Area of Interest
   int last_i = -1;
   int last_j = -1;
   double sameAoiThresh = 10.0; // cells
   bool sameAoi = false;
-  // best area of interest
-  int best_i = -1;
-  int best_j = -1;
-  double best_dist = 1000.0;
 
   // finding local maxima points
   for (int i = offset; i < (width - offset); i++) {
@@ -79,24 +79,22 @@ void processMap() {
           ROS_INFO("Found AOI at (%d,%d)", i, j);
           last_i = i;
           last_j = j;
-          count++;
+          geometry_msgs::Point aoi;
+          aoi.x = (j - width / 2) * resolution;
+          aoi.y = (i - width / 2) * resolution;
+          aoi.z = 0.0;
+          AOIs.push_back(aoi);
           ROS_INFO("AOI info:");
           ROS_INFO("X offset: %f", (j - width / 2)*resolution);
           ROS_INFO("Y offset: %f", (i - width / 2)*resolution);
-          if (sqrt(pow(i - width / 2, 2) + pow(j - width / 2, 2)) < best_dist) {
-            best_i = i;
-            best_j = j;
-            best_dist = sqrt(pow(i - width / 2, 2) + pow(j - width / 2, 2));
-          }
         }
       }
     }
   }
-  ROS_INFO("costmap local max count: %d", count);
+  ROS_INFO("costmap local has %lu AOIs", AOIs.size());
 
-
-  // find transformation to manipulating youbot
-  if (count > 0) {
+  for (size_t i = 0; i < AOIs.size(); i++) {
+    // find transformation to manipulating youbot for each AOI
     try {
       tf::StampedTransform stransform;
       tf::TransformListener listener;
@@ -109,30 +107,51 @@ void processMap() {
       orientation.z = 0.0;
       orientation.w = 1.0;
       pin.pose.orientation = orientation;
-      pin.pose.position.x = (best_j - width / 2) * resolution;
-      pin.pose.position.y = (best_i - width / 2) * resolution;
+      pin.pose.position.x = AOIs[i].x;
+      pin.pose.position.y = AOIs[i].y;
       geometry_msgs::PoseStamped pout;
 
       listener.waitForTransform("/youbot_3/base_footprint", pin.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
       listener.transformPose("/youbot_3/base_footprint", pin, pout);
-      ROS_INFO("AOI in frame of Youbot 3, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+      // ROS_INFO("AOI in frame of Youbot 3, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+      AOIs[i].x = pout.pose.position.x;
+      AOIs[i].y = pout.pose.position.y;
 
     } catch (tf::TransformException ex) {
       ROS_ERROR("%s", ex.what());
       ros::Duration(1.0).sleep();
     }
   }
-
+  return AOIs;
 }
 
 // stores a copy of the costmap
 void costmapCB(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
   ROS_INFO("Costmap msg received");
   costmap_ = (*msg);
-  ROS_INFO("Captured origin: (%f,%f)", costmap_.info.origin.position.x, costmap_.info.origin.position.y);
-  ROS_INFO("Captured orientation: (%f,%f,%f,%f)", costmap_.info.origin.orientation.x, costmap_.info.origin.orientation.y, costmap_.info.origin.orientation.z, costmap_.info.origin.orientation.w);
-
   received_costmap_ = true;
+}
+
+size_t promptUser(  std::vector<geometry_msgs::Point> aois) {
+
+  for (size_t i = 0; i < aois.size(); i++) {
+    ROS_INFO("AOI %lu: (%f,%f,0.0)", i, aois[i].x, aois[i].y);
+  }
+  ROS_INFO("Which area would you like to explore?");
+
+  string input = "";
+  size_t myNumber = 0;
+  while (true) {
+    cout << "Please enter a valid AOI index: ";
+    getline(cin, input);
+
+    // This code converts from string to number safely.
+    stringstream myStream(input);
+    if (myStream >> myNumber && myNumber < aois.size() && myNumber >= 0)
+      break;
+    cout << "Invalid AOI, please try again" << endl;
+  }
+  return myNumber;
 }
 
 int main (int argc, char **argv) {
@@ -163,6 +182,8 @@ int main (int argc, char **argv) {
   // publisher to stop youbot
   ros::Publisher nav_pub_ = n.advertise<geometry_msgs::Twist>("youbot_4/cmd_vel", 1000);
   ros::Subscriber costm_sub_ = n.subscribe("/youbot_4/move_base_node/local_costmap/costmap", 1, &costmapCB);
+  ros::Publisher aoi_pub = n.advertise<geometry_msgs::Point>("areas_of_interest", 10);
+
 
 
   ROS_INFO("Waiting for action server to start.");
@@ -260,8 +281,16 @@ int main (int argc, char **argv) {
 
 
   // processing costmap
-  processMap();
-  // TODO from AOI found, publish to areas of interest topic
+  std::vector<geometry_msgs::Point> AOIs = processMap();
+
+  if (AOIs.size() > 0) {
+    // TODO prompt use which AOI to choose from
+    size_t aoi_index = promptUser(AOIs);
+
+    // TODO publish AOI
+    ROS_INFO("AOI %lu chosen", aoi_index);
+    aoi_pub.publish(AOIs[aoi_index]);
+  }
 
   if (success) {
     ROS_INFO("Task successful!");
