@@ -110,12 +110,12 @@ void PlanSensedApproachAction::executeCB() {
       }
     } else if (state == 0) {
       // move to initial detection position
-      posture_goal_.posture = "sensed_approach_front";
+      posture_goal_.posture = "check_front";
       ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
       ac_move_.sendGoal(posture_goal_);
       moving_arm = true;
     } else if (state < endstate) {
-      ROS_INFO("Approaching 20cm");
+      ROS_INFO("Approaching 30cm");
       ac_nav_.sendGoal(position_goal_);
       moving_base = true;
     }
@@ -139,7 +139,7 @@ void PlanSensedApproachAction::executeCB() {
 
 // compute desired position (20cm away) to move manipulating agent to given an AOI
 geometry_msgs::Point getRelativePosition(geometry_msgs::Point aoi) {
-  double magnitude = 0.2;
+  double magnitude = 0.3;
   geometry_msgs::Point result;
   double direction = atan2(aoi.y, aoi.x);
   result.x = magnitude * cos(direction);
