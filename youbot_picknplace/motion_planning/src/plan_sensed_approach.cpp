@@ -46,13 +46,12 @@ void PlanSensedApproachAction::executeCB() {
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
   //  states:
-  // 0 arm positioning
+  // 0 check front pt3
   // 1 check front pt1
   // 2 check front pt2
-  // 3 check front pt3
-  // 4 end
+  // 3 end
   int state = 0;
-  int endstate = 4;
+  int endstate = 3;
 
   // declare some set messages
   // send a goal to the obj detection action

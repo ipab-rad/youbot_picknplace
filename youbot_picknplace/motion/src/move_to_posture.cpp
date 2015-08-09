@@ -80,7 +80,7 @@ void MoveToPostureAction::executeCB() {
       as_.publishFeedback(feedback_);
       state = 2;
       timed_out_ = false;
-      timer_ = nh_.createTimer(ros::Duration(30), &MoveToPostureAction::timerCB, this, true);
+      timer_ = nh_.createTimer(ros::Duration(15), &MoveToPostureAction::timerCB, this, true);
     } else if (state == 2) {
       // TODO: fix next lines
       success = true;
