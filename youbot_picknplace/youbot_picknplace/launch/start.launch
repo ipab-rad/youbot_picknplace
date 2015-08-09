@@ -7,9 +7,12 @@ MoveIt and motion planning nodes are initialized.
 -->
 
 <launch>
+      <!-- frame broadcasters -->
       <node pkg="tf" type="static_transform_publisher" name="base_frame_bc"
       args="0 0 0 0 0 0 $(env ROBOT_NAME)/base_footprint base_footprint 10" />
 
+  <node pkg="tf" type="static_transform_publisher" name="camera_link_frame_bc"
+      args="0 0 0 0 0 0 $(env ROBOT_NAME)/arm_cam3d_foot_link $(env ROBOT_NAME)/arm_cam3d_link 10" />
 
 	<!-- move it interface -->
     <include file="$(find youbot_moveit_config)/launch/move_group.launch" ns="$(env ROBOT_NAME)">

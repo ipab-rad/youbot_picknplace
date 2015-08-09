@@ -6,7 +6,7 @@ This launch file starts a node that interfaces with the ASUS Xtion camera.
 
 <launch>
 
-  <param name="/$(env ROBOT_NAME)/arm_cam3d/driver/data_skip" value="10" />
+  <param name="/$(env ROBOT_NAME)/arm_cam3d/driver/data_skip" value="0" />
 
     <!-- start xtion -->
     <include file="$(find openni2_launch)/launch/openni2.launch" ns="$(env ROBOT_NAME)">

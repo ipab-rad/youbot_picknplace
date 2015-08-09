@@ -75,18 +75,20 @@ void DetectObjectAction::executeCB() {
     r.sleep();
   }
 
-  try {
-    object_pose_.header.stamp = ros::Time(0);
-    geometry_msgs::PoseStamped pout;
-    listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-    listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
-    ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
-    result_.pose = pout;
+  if (success) {
+    try {
+      object_pose_.header.stamp = ros::Time(0);
+      geometry_msgs::PoseStamped pout;
+      listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+      listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
+      ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+      result_.pose = pout;
 
-  } catch (tf::TransformException ex) {
-    ROS_ERROR("%s", ex.what());
-    ros::Duration(1.0).sleep();
-    success = false;
+    } catch (tf::TransformException ex) {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      success = false;
+    }
   }
 
   if (success) {

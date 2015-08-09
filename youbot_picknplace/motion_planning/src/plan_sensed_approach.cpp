@@ -58,7 +58,7 @@ void PlanSensedApproachAction::executeCB() {
   // send a goal to the obj detection action
   sensing_msgs::DetectObjectGoal detect_goal;
   detect_goal.detect = true;
-  detect_goal.timeout = 5;
+  detect_goal.timeout = 10;
 
   // move to initial detection position
   position_goal_.position = getRelativePosition(aoi_position_);

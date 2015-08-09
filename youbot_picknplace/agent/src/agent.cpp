@@ -126,6 +126,8 @@ int main (int argc, char **argv) {
       }
     } else if (state == 3) {
       if (object_detected_far) {
+        ROS_INFO("Object sensed from far");
+
         object_detected_far = false;
         detection_position = 0;
         // PICK
