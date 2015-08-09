@@ -111,7 +111,7 @@ void PlanSensedApproachAction::executeCB() {
       }
     } else if (state == 0) {
       // move to initial detection position
-      posture_goal_.posture = "check_front";
+      posture_goal_.posture = "sensed_approach_front";
       ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
       ac_move_.sendGoal(posture_goal_);
       moving_arm = true;
