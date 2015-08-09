@@ -1,0 +1,12 @@
+#goal definition
+geometry_msgs/Point aoi_position
+---
+#result definition
+bool success
+geometry_msgs/PoseStamped pose
+---
+#feedback
+# INITIAL=0
+# EXECUTING=1
+# FINISHED=2
+uint8 curr_state

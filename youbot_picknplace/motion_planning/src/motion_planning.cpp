@@ -11,6 +11,7 @@
 #include "motion_planning/plan_go_home.hpp"
 #include "motion_planning/plan_listen_aoi.hpp"
 #include "motion_planning/plan_approach_object.hpp"
+#include "motion_planning/plan_sensed_approach.hpp"
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "motion_planning");
@@ -23,6 +24,7 @@ int main(int argc, char** argv) {
   PlanGoHomeAction goHomePlanner(nh, "plan_go_home");
   PlanListenAoiAction listenAoiPlanner(nh, "plan_listen_aoi");
   PlanApproachObjectAction approachObjectPlanner(nh, "plan_approach_object");
+  PlanSensedApproachAction sensedApproachPlanner(nh, "plan_sensed_approach");
 
   ros::spin();
   return 0;

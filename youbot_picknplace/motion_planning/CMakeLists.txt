@@ -119,6 +119,7 @@ add_executable(motion_planning
  src/plan_go_home.cpp
  src/plan_listen_aoi.cpp
  src/plan_approach_object.cpp
+ src/plan_sensed_approach.cpp
 )
 
 add_executable(plan_detection_client
