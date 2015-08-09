@@ -25,7 +25,8 @@ void DetectObjectAction::init() {
 }
 
 void DetectObjectAction::goalCB() {
-  detect_ = as_.acceptNewGoal()->detect;
+  detection_time_ = as_.acceptNewGoal()->timeout;
+  detect_ = true;
   this->executeCB();
 }
 
@@ -49,9 +50,8 @@ void DetectObjectAction::executeCB() {
   ros::Rate r(20);
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
-  int detection_time = 30;
   timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(detection_time), &DetectObjectAction::timerCB, this, true);
+  timer_ = nh_.createTimer(ros::Duration(detection_time_), &DetectObjectAction::timerCB, this, true);
 
 
   while (going) {
@@ -90,8 +90,6 @@ void DetectObjectAction::executeCB() {
   }
 
   if (success) {
-
-
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {

@@ -52,6 +52,7 @@ class DetectObjectAction {
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
+  int detection_time_;
 
   geometry_msgs::PoseStamped object_pose_;
   bool detect_;

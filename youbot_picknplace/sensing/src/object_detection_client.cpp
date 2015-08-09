@@ -18,6 +18,7 @@ int main (int argc, char **argv) {
   // send a goal to the action
   sensing_msgs::DetectObjectGoal goal;
   goal.detect = true;
+  goal.timeout = 30;
 
 
   ac.sendGoal(goal);
