@@ -80,6 +80,7 @@ void PlanListenAoiAction::executeCB() {
 
   if (success) {
     result_.success = success;
+    result_.aoi_position = target_position_;
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {

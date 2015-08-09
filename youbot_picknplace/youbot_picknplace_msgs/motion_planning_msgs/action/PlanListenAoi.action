@@ -3,6 +3,7 @@ bool find
 ---
 #result definition
 bool success
+geometry_msgs/Point aoi_position
 ---
 #feedback
 # INITIAL=0

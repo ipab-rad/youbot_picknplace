@@ -9,6 +9,7 @@
 #include <motion_planning_msgs/PlanGoHomeAction.h>
 #include <motion_planning_msgs/PlanListenAoiAction.h>
 #include <motion_planning_msgs/PlanApproachObjectAction.h>
+#include <motion_planning_msgs/PlanSensedApproachAction.h>
 
 int main (int argc, char **argv) {
   ros::init(argc, argv, "agent");
@@ -26,18 +27,21 @@ int main (int argc, char **argv) {
   // approaching state
   bool approaching_object = false;
   bool no_aoi = false;
+  bool object_detected_far = false;
 
 
   // states:
-  // 0 listen + navigate area of interest
-  // 1 object detection
-  // 2 pick
-  // 3 place
-  // 4 end
+  // 0 listen + slightly approach area of interest
+  // 1 sensed approach
+  // 2 object detection
+  // 3 pick
+  // 4 place
+  // 5 end
   int state = 0;
-  int endstate = 4;
+  int endstate = 5;
+  int jumpstart = 2;
   if (atoi(argv[1]) == 0) {
-    state = 1;
+    state = jumpstart;
     no_aoi = true;
   }
 
@@ -46,12 +50,15 @@ int main (int argc, char **argv) {
 
   char *s = std::getenv("ROBOT_NAME");
   // action lib clients
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> nav_ac(std::string(s) + "/motion_planning/plan_listen_aoi", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanListenAoiAction> aoi_ac(std::string(s) + "/motion_planning/plan_listen_aoi", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction> obj_ac(std::string(s) + "/motion_planning/plan_detection", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac(std::string(s) + "/motion_planning/plan_pick", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac(std::string(s) + "/motion_planning/plan_place", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanGoHomeAction> home_ac(std::string(s) + "/motion_planning/plan_go_home", true);
   actionlib::SimpleActionClient<motion_planning_msgs::PlanApproachObjectAction> approach_ac(std::string(s) + "/motion_planning/plan_approach_object", true);
+  actionlib::SimpleActionClient<motion_planning_msgs::PlanSensedApproachAction> sensed_ac(std::string(s) + "/motion_planning/plan_sensed_approach", true);
+
+  geometry_msgs::PoseStamped object_position_;
 
   // START
 
@@ -60,7 +67,7 @@ int main (int argc, char **argv) {
 
     if (approaching_object) {
       if (approach_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        state = 1;
+        state = jumpstart;
         no_aoi = true;
         approaching_object = false;
       } else if (approach_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
@@ -72,17 +79,31 @@ int main (int argc, char **argv) {
     else if (state == 0) {
       ROS_INFO("Waiting for area of interest action server to start.");
       // wait for the action server to start
-      nav_ac.waitForServer(); //will wait for infinite time
+      aoi_ac.waitForServer(); //will wait for infinite time
       ROS_INFO("Area of interest Action server started, sending goal.");
       // send a goal to the action
       motion_planning_msgs::PlanListenAoiGoal nav_goal;
       nav_goal.find = true;
-      nav_ac.sendGoal(nav_goal);
+      aoi_ac.sendGoal(nav_goal);
       state = 1;
 
     } else if (state == 1) {
+      if (aoi_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        ROS_INFO("Waiting for Sensed Approach action server to start.");
+        // wait for the action server to start
+        sensed_ac.waitForServer(); //will wait for infinite time
+        ROS_INFO("Sensed approach Action server started, sending goal.");
+        // send a goal to the action
+        motion_planning_msgs::PlanSensedApproachGoal sensed_goal;
+        sensed_goal.aoi_position = aoi_ac.getResult()->aoi_position;
+        sensed_ac.sendGoal(sensed_goal);
+        state = 2;
+      } else if (aoi_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        going = false;
+      }
+    } else if (state == 2) {
       // TODO: improve logic here
-      //  issue being that state 1 may be the initial state and nav_ac may not have action running
+      //  issue being that state 1 may be the initial state and aoi_ac may not have action running
       if (no_aoi) {
         obj_ac.waitForServer();
         ROS_INFO("Detect Action server started, sending goal.");
@@ -90,19 +111,35 @@ int main (int argc, char **argv) {
         motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
         obj_goal.detect = detection_position;
         obj_ac.sendGoal(obj_goal);
-        state = 2;
-      } else if (nav_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        state = 3;
+      } else if (sensed_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        object_detected_far = true;
+        object_position_ = sensed_ac.getResult()->pose;
+        state = 3;
+      } else if (sensed_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         ROS_INFO("Detect Action server started, sending goal.");
-        // send a goal to the action
+        // if failed start default object detection procedure
         motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
         obj_goal.detect = 0;
         obj_ac.sendGoal(obj_goal);
-        state = 2;
-      } else if (nav_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-        going = false;
+        state = 3;
       }
-    } else if (state == 2) {
-      if (obj_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+    } else if (state == 3) {
+      if (object_detected_far) {
+        object_detected_far = false;
+        detection_position = 0;
+        // PICK
+        ROS_INFO("Waiting for Pick action server to start.");
+        // wait for the action server to start
+        pick_ac.waitForServer(); //will wait for infinite time
+        ROS_INFO("Pick Action server started, sending goal.");
+        // send a goal to the action
+        motion_planning_msgs::PlanPickGoal pick_goal;
+        pick_goal.object_pose = object_position_;
+        ROS_INFO("Object to pick is at (%f,%f).", pick_goal.object_pose.pose.position.x, pick_goal.object_pose.pose.position.y);
+        pick_ac.sendGoal(pick_goal);
+        state = 4;
+      } else if (obj_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         detection_position = obj_ac.getResult()->state;
         // PICK
         ROS_INFO("Waiting for Pick action server to start.");
@@ -114,11 +151,11 @@ int main (int argc, char **argv) {
         pick_goal.object_pose = obj_ac.getResult()->pose;
         ROS_INFO("Object to pick is at (%f,%f).", pick_goal.object_pose.pose.position.x, pick_goal.object_pose.pose.position.y);
         pick_ac.sendGoal(pick_goal);
-        state = 3;
+        state = 4;
       } else if (obj_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         going = false;
       }
-    } else if (state == 3) {
+    } else if (state == 4) {
       // TODO fix case when out of reach
       if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         // PLACE
@@ -131,7 +168,7 @@ int main (int argc, char **argv) {
         place_goal.place_object = true;
 
         place_ac.sendGoal(place_goal);
-        state = 4;
+        state = 5;
       } else if (pick_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         if (pick_ac.getResult()->success == -2) {
           ROS_INFO("Out of reach. Suggested movement from Pick (%f,%f,0.0)"
