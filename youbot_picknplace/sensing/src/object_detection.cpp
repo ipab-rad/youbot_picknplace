@@ -111,6 +111,7 @@ void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObj
     const geometry_msgs::Pose obj_pose = object.pose.pose.pose;
 
     ROS_INFO("Object was detected. With confidence: %f", object.confidence);
+    ROS_INFO("Object key: %s", object.type.key.c_str());
     if (object.confidence > 0.95) {
       object_pose_.header.frame_id = youbot_ + "/" + object.pose.header.frame_id;
       object_pose_.header.stamp = ros::Time(0);
