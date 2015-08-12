@@ -8,7 +8,8 @@ PlanPickAction::PlanPickAction(ros::NodeHandle nh, std::string name) :
   action_name_(name),
   ac_gripper_("gripper_motion/move_gripper", true),
   ac_move_("motion/move_to_pose", true),
-  ac_move_posture_("motion/move_to_posture", true)  {
+  ac_move_posture_("motion/move_to_posture", true),
+  detect_ac_("sensing/object_detection", true)  {
   //register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&PlanPickAction::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlanPickAction::preemptCB, this));
@@ -42,6 +43,7 @@ void PlanPickAction::preemptCB() {
 void PlanPickAction::executeCB() {
   bool going = true;
   bool success = false;
+  bool init = true;
   // moving state
   bool moving = false;
   bool moving_gripper = false;
@@ -54,28 +56,17 @@ void PlanPickAction::executeCB() {
   // 4 move away from object
   // 5 end
   int state = 0;
-  int endstate = 5;
+  int endstate = 6;
   ros::Rate r(10);
 
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
+  int pick_attempts = 1;
   // motion attempts
-  int motion_attempts = 6;
+  int motion_attempts = -1;
 
-  geometry_msgs::PoseStamped gripper_pose = object_pose_;
-  gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.position);
-
-  double distanceObj = sqrt(pow(0.143 - object_pose_.pose.position.x, 2) +
-                            pow(object_pose_.pose.position.y, 2));
-  ROS_INFO("Object 2D distance to base_link is: %f", distanceObj);
-
-  // Safety guard for never attempting to reach below the ground
-  double ground_limit = 0.095; // 9,5cm
-  if (gripper_pose.pose.position.z < ground_limit) {
-    ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f", ground_limit, gripper_pose.pose.position.z);
-    ROS_INFO("Assuming z='ground limit' for safety");
-    gripper_pose.pose.position.z = ground_limit;
-  }
+  geometry_msgs::PoseStamped gripper_pose;
+  double distanceObj = -1.0;
 
   // start motion
   while (going) {
@@ -112,6 +103,23 @@ void PlanPickAction::executeCB() {
         moving_gripper = false;
         // TODO: determine next state
       }
+    } else if (init) {
+      motion_attempts = 6;
+      gripper_pose = object_pose_;
+      gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.position);
+
+      distanceObj = sqrt(pow(0.143 - object_pose_.pose.position.x, 2) +
+                         pow(object_pose_.pose.position.y, 2));
+      ROS_INFO("Object 2D distance to base_link is: %f", distanceObj);
+
+      // Safety guard for never attempting to reach below the ground
+      double ground_limit = 0.095; // 9,5cm
+      if (gripper_pose.pose.position.z < ground_limit) {
+        ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f", ground_limit, gripper_pose.pose.position.z);
+        ROS_INFO("Assuming z='ground limit' for safety");
+        gripper_pose.pose.position.z = ground_limit;
+      }
+      init = false;
     } else if (state == 0) {
       // target pose declaration
       geometry_msgs::PoseStamped target_pose = gripper_pose;
@@ -161,9 +169,41 @@ void PlanPickAction::executeCB() {
       ac_move_.sendGoal(arm_goal_);
       moving = true;
 
+    } else if (state == 5) {
+
+      // move to detection position
+      motion_msgs::MoveToPostureGoal posture_goal_;
+      if (object_pose_.pose.position.y > 0.0)
+        posture_goal_.posture = "check_left";
+      else
+        posture_goal_.posture = "check_right";
+
+      if (object_pose_.pose.position.x > 0.3)
+        posture_goal_.posture = "check_front";
+
+      ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
+      ac_move_posture_.sendGoal(posture_goal_);
+      // start detection action
+      sensing_msgs::DetectObjectGoal detect_goal;
+      detect_goal.detect = true;
+      detect_goal.timeout = 10;
+      detect_ac_.sendGoal(detect_goal);
+      state = endstate;
+
     } else if (state == endstate) {
-      success = true;
-      going = false;
+      if (detect_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        if (pick_attempts > 0) {
+          pick_attempts--;
+          object_pose_ = detect_ac_.getResult()->pose;
+          init = true;
+          state = 0;
+        } else {
+          going = false;
+        }
+      } else if (detect_ac_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        success = true;
+        going = false;
+      }
     }
 
     ros::spinOnce();

@@ -12,6 +12,8 @@
 #include <motion_msgs/MoveToPoseAction.h>
 #include <motion_msgs/MoveToPostureAction.h>
 #include <motion_msgs/MoveGripperAction.h>
+#include "sensing_msgs/DetectObjectAction.h"
+
 
 // tf
 #include <tf/transform_listener.h>
@@ -46,6 +48,7 @@ class PlanPickAction {
   actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> ac_gripper_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPoseAction> ac_move_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> ac_move_posture_;
+  actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> detect_ac_;
 
   // gripper server
   ros::ServiceClient pose_c_;
