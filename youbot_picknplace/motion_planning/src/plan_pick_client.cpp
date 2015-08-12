@@ -28,7 +28,7 @@ int main (int argc, char **argv) {
   // send a goal to the action
   motion_planning_msgs::PlanPickGoal goal;
   geometry_msgs::PoseStamped target_pose;
-  target_pose.header.frame_id = "youbot_1/base_footprint";
+  target_pose.header.frame_id = "youbot_3/base_footprint";
 
   if (argc == 2) {
     int command = atoi(argv[1]);
