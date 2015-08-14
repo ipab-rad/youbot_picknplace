@@ -48,14 +48,11 @@ class MoveToPoseAction {
   double distance_;
   double orientation_tol_;
   double planning_time_;
+  bool grasping_move_;
 
   // timer for action timeout
   ros::Timer timer_;
   bool timed_out_;
-
-  // moveit motion plan
-  move_group_interface::MoveGroup::Plan plan;
-
 
 
 };

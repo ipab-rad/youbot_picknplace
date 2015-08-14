@@ -26,7 +26,7 @@ void PlanPickAction::init() {
   ac_gripper_.waitForServer();
   ac_move_.waitForServer();
   ROS_INFO("Connected to gripper and arm movement servers");
-  approach_dist_ = 0.05;
+  approach_dist_ = 0.02;
   min_grasp_dist_ = 0.3;
 }
 
@@ -49,14 +49,14 @@ void PlanPickAction::executeCB() {
   bool moving_gripper = false;
 
   // states:
-  // 0 approach object
-  // 1 open gripper
-  // 2 approach object
-  // 3 close gripper
-  // 4 move away from object
+  // 0 open gripper
+  // 1 approach object
+  // 2 close gripper
+  // 3 move away from object
+  // 4 validate
   // 5 end
   int state = 0;
-  int endstate = 6;
+  int endstate = 5;
   ros::Rate r(10);
 
   ROS_INFO("Executing goal for %s", action_name_.c_str());
@@ -121,55 +121,44 @@ void PlanPickAction::executeCB() {
       }
       init = false;
     } else if (state == 0) {
-      // target pose declaration
-      geometry_msgs::PoseStamped target_pose = gripper_pose;
-      // approach object
-      target_pose.pose.position.z += approach_dist_;
-      arm_goal_.pose = target_pose;
-      arm_goal_.distance_tol = 0.01;
-      arm_goal_.orientation_tol = 0.1;
-      arm_goal_.planning_time = 20.0;
-      ROS_INFO("Approaching object");
-      ac_move_.sendGoal(arm_goal_);
-      moving = true;
-
-    } else if (state == 1) {
       // open gripper action
       gripper_goal_.command = 1;
       ROS_INFO("Opening Gripper");
       ac_gripper_.sendGoal(gripper_goal_);
       moving_gripper = true;
 
-    } else if (state == 2) {
+    } else if (state == 1) {
       // move to pose action
       arm_goal_.pose = gripper_pose;
       arm_goal_.distance_tol = 0.01;
       arm_goal_.orientation_tol = 0.1;
       arm_goal_.planning_time = 20.0;
+      arm_goal_.grasping_move = true;
       ROS_INFO("Making contact with object");
       ac_move_.sendGoal(arm_goal_);
       moving = true;
 
-    } else if (state == 3) {
+    } else if (state == 2) {
       // close gripper
       gripper_goal_.command = 0;
       ROS_INFO("Closing Gripper");
       ac_gripper_.sendGoal(gripper_goal_);
       moving_gripper = true;
 
-    } else if (state == 4) {
+    } else if (state == 3) {
       // moving away object
-      geometry_msgs::PoseStamped target_pose = gripper_pose;
-      target_pose.pose.position.z += approach_dist_;
-      arm_goal_.pose = target_pose;
-      arm_goal_.distance_tol = 0.02;
-      arm_goal_.orientation_tol = 0.2;
-      arm_goal_.planning_time = 20.0;
-      ROS_INFO("Moving away from object");
-      ac_move_.sendGoal(arm_goal_);
-      moving = true;
-
-    } else if (state == 5) {
+      // geometry_msgs::PoseStamped target_pose = gripper_pose;
+      // target_pose.pose.position.z += approach_dist_;
+      // arm_goal_.pose = target_pose;
+      // arm_goal_.distance_tol = 0.02;
+      // arm_goal_.orientation_tol = 0.2;
+      // arm_goal_.planning_time = 20.0;
+      // arm_goal_.grasping_move = false;
+      // ROS_INFO("Moving away from object");
+      // ac_move_.sendGoal(arm_goal_);
+      // moving = true;
+      state++;
+    } else if (state == 4) {
 
       // move to detection position
       motion_msgs::MoveToPostureGoal posture_goal_;

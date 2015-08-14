@@ -3,6 +3,7 @@ geometry_msgs/PoseStamped pose
 float64 distance_tol
 float64 orientation_tol
 float64 planning_time
+bool grasping_move
 ---
 #result definition
 bool success

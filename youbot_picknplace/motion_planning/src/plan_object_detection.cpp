@@ -79,7 +79,7 @@ void PlanObjectDetectionAction::executeCB() {
         // send a goal to the obj detection action
         sensing_msgs::DetectObjectGoal detect_goal;
         detect_goal.detect = true;
-        detect_goal.timeout = 15;
+        detect_goal.timeout = 5;
         detect_ac_.sendGoal(detect_goal);
         detect_ = true;
         moving = false;
