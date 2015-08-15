@@ -199,7 +199,7 @@ int main (int argc, char **argv) {
   base_orientation.z = 0.0;
   base_orientation.w = 1.0;
 
-  double movement_size = 1.5; //meters
+  double movement_size = 2.0; //meters
 
   ros::Rate r(10);
 
