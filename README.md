@@ -38,6 +38,11 @@ sudo apt-get install libopenni-dev ros-hydro-catkin ros-hydro-ecto* ros-hydro-op
 git clone https://github.com/mas-group/youbot_simulation.git
 ```
 
+- Build the project using custom made build script
+```
+bash catkin_make_clean.sh
+```
+
 # Usage
 
 
@@ -49,6 +54,10 @@ git clone https://github.com/mas-group/youbot_simulation.git
     - Add object mesh from file. Using ID returned in previous command. other mesh files can be supplied by changing the path for the object file:
     ```
     rosrun object_recognition_core mesh_add.py d399103d741b4138f935e68ba6000829 `rospack find sensing`/data/cube.stl --commit
+    ```
+    - Delete object using ID:
+    ```
+    rosrun object_recognition_core object_delete.py d399103d741b4138f935e68ba6000829 --commit
     ```
     - Plane detection with Rviz visualization:
     ```
@@ -84,3 +93,43 @@ git clone https://github.com/mas-group/youbot_simulation.git
 ```
     rosrun youbot_driver_ros_interface youbot_keyboard_arm_teleop.py
 ```
+
+- Manipulating Agent
+
+    on youBot (in different terminals):
+    ```
+    roslaunch youbot_picknplace prepare.launch
+    roslaunch youbot_picknplace detection.launch
+    ```
+
+    on external computer (in different terminals):
+    ```
+    roscore
+    roslaunch youbot_picknplace start.launch
+    ```
+
+    system is ready now
+
+    to run manipulating agent (it will wait for interest area to be published):
+    ```
+    rosrun agent agent 1
+    ```
+
+- Exploring Agent
+
+    - on youBot:
+    ```
+    roslaunch youbot_navigation_common prepare_youbot.launch
+    ```
+
+    - on external computer (in different terminals):
+    ```
+    roslaunch youbot_navigation_common bringup_move_base.launch
+    ```
+
+    - system is ready now
+
+    - to run exploring agent:
+    ```
+    rosrun agent agent_nav 1
+    ```
