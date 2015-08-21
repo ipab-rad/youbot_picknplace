@@ -20,7 +20,8 @@ int main (int argc, char **argv) {
   geometry_msgs::Point position;
   position.x = 0.05;
   position.y = 0.1;
-  goal.position = position;
+  goal.object_position = position;
+  goal.fake_aoi = true;
   ac.sendGoal(goal);
 
   //exit

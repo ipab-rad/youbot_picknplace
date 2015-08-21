@@ -33,17 +33,42 @@ class PlanApproachObjectAction {
   void preemptCB();
 
   void executeCB();
+  void executeFakeCB();
+
+  void setPositionGoals();
 
  private:
   // navigation client
   actionlib::SimpleActionClient<navigation_msgs::MoveToPositionAction> ac_move_;
 
   // message goals
-  navigation_msgs::MoveToPositionGoal position_goal_;
+  navigation_msgs::MoveToPositionGoal position_goal;
+  navigation_msgs::MoveToPositionGoal position_goal_2;
+  navigation_msgs::MoveToPositionGoal position_goal_3;
+  bool skip_1;
+  bool skip_2;
+  bool skip_3;
+
+
+
+  geometry_msgs::Point current_position_;
   // position goal
   geometry_msgs::Point target_position_;
+  geometry_msgs::Point object_position_;
 
+  //  states:
+  // 0 check front
+  // 1 check right
+  // 2 check left
+  int object_direction_;
+
+  bool fake_aoi_;
+  geometry_msgs::Point aoi_position_;
+
+  // rough grasp assumptions
+  double min_grasp_dist_;
 };
 
+geometry_msgs::Point computeFakeMovement(double min_grasp, geometry_msgs::Point pt);
 
 #endif /* PLAN_APPROACH_OBJECT_SERVER_HPP */
