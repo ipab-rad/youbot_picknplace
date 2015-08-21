@@ -38,11 +38,6 @@ sudo apt-get install libopenni-dev ros-hydro-catkin ros-hydro-ecto* ros-hydro-op
 git clone https://github.com/mas-group/youbot_simulation.git
 ```
 
-- Build the project using custom made build script
-```
-bash catkin_make_clean.sh
-```
-
 # Usage
 
 
@@ -108,7 +103,7 @@ bash catkin_make_clean.sh
     roslaunch youbot_picknplace start.launch
     ```
 
-    system is ready now
+    system is ready now,
 
     to run manipulating agent (it will wait for interest area to be published):
     ```
