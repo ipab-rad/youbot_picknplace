@@ -70,7 +70,6 @@ void PlanApproachObjectAction::executeCB() {
         state++;
         moving = false;
       } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-        current_position_ = ac_move_.getResult()->current;
         // failed
         success = false;
         going = false;
@@ -107,7 +106,6 @@ void PlanApproachObjectAction::executeCB() {
         state++;
       }
     } else if (state == endstate) {
-      current_position_ = ac_move_.getResult()->current;
       // success
       success = true;
       going = false;
@@ -127,7 +125,6 @@ void PlanApproachObjectAction::executeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
-  result_.current_position = current_position_;
 }
 
 void PlanApproachObjectAction::executeFakeCB() {
@@ -158,12 +155,10 @@ void PlanApproachObjectAction::executeFakeCB() {
 
 
     if (ac_move_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      current_position_ = ac_move_.getResult()->current;
       // success
       success = true;
       going = false;
     } else if (ac_move_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-      current_position_ = ac_move_.getResult()->current;
       // failed
       success = false;
       going = false;
@@ -182,7 +177,6 @@ void PlanApproachObjectAction::executeFakeCB() {
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);
   }
-  result_.current_position = current_position_;
 }
 
 void PlanApproachObjectAction::setPositionGoals() {
