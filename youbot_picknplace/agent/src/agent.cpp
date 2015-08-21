@@ -10,11 +10,16 @@
 #include <motion_planning_msgs/PlanListenAoiAction.h>
 #include <motion_planning_msgs/PlanApproachObjectAction.h>
 #include <motion_planning_msgs/PlanSensedApproachAction.h>
+#include "nav_msgs/Odometry.h"
+
+geometry_msgs::Point base_position;
+void currPositionCallback(const nav_msgs::Odometry::ConstPtr& msg);
 
 int main (int argc, char **argv) {
   ros::init(argc, argv, "agent");
 
   ros::Time::init();
+  ros::NodeHandle nh("~");
 
   if (argc != 2) {
     ROS_INFO("Please provide one argument: 1=motion 0=no motion");
@@ -26,7 +31,6 @@ int main (int argc, char **argv) {
   ros::Rate r(10);
   // approaching state
   bool approaching_object = false;
-  bool no_aoi = false;
   bool object_detected_far = false;
 
 
@@ -40,12 +44,18 @@ int main (int argc, char **argv) {
   int state = 0;
   int endstate = 5;
   int jumpstart = 2;
+
+  bool grasp_simulation = false;
   if (atoi(argv[1]) == 0) {
     state = jumpstart;
-    no_aoi = true;
+    grasp_simulation = true;
   }
+  bool fake_aoi = grasp_simulation;
 
-  //
+  //  states:
+  // 0 check front
+  // 1 check right
+  // 2 check left
   int detection_position = 0;
 
   char *s = std::getenv("ROBOT_NAME");
@@ -59,6 +69,9 @@ int main (int argc, char **argv) {
   actionlib::SimpleActionClient<motion_planning_msgs::PlanSensedApproachAction> sensed_ac(std::string(s) + "/motion_planning/plan_sensed_approach", true);
 
   geometry_msgs::PoseStamped object_position_;
+  geometry_msgs::Point aoi_position_;
+
+  ros::Subscriber odom_sub = nh.subscribe("/" + std::string(std::getenv("ROBOT_NAME")) + "/odom", 1000, currPositionCallback);
 
   // START
 
@@ -67,8 +80,11 @@ int main (int argc, char **argv) {
 
     if (approaching_object) {
       if (approach_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        detection_position = approach_ac.getResult()->object_direction;
+        ROS_INFO("Base position (%f,%f)", base_position.x, base_position.y);
+
         state = jumpstart;
-        no_aoi = true;
+        fake_aoi = true;
         approaching_object = false;
       } else if (approach_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         going = false;
@@ -95,6 +111,9 @@ int main (int argc, char **argv) {
         ROS_INFO("Sensed approach Action server started, sending goal.");
         // send a goal to the action
         motion_planning_msgs::PlanSensedApproachGoal sensed_goal;
+        aoi_position_ = aoi_ac.getResult()->aoi_position;
+        ROS_INFO("Base position (%f,%f)", base_position.x, base_position.y);
+
         sensed_goal.aoi_position = aoi_ac.getResult()->aoi_position;
         sensed_ac.sendGoal(sensed_goal);
         state = 2;
@@ -104,17 +123,19 @@ int main (int argc, char **argv) {
     } else if (state == 2) {
       // TODO: improve logic here
       //  issue being that state 1 may be the initial state and aoi_ac may not have action running
-      if (no_aoi) {
+      if (fake_aoi) {
         obj_ac.waitForServer();
-        ROS_INFO("Detect Action server started, sending goal.");
+        ROS_INFO("Detect Action server started, sending goal. Starting at position %d", detection_position);
         // send a goal to the action
         motion_planning_msgs::PlanObjectDetectionGoal obj_goal;
         obj_goal.detect = detection_position;
         obj_ac.sendGoal(obj_goal);
         state = 3;
       } else if (sensed_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        ROS_INFO("Base position (%f,%f)", base_position.x, base_position.y);
         object_detected_far = true;
         object_position_ = sensed_ac.getResult()->pose;
+        ROS_INFO("Object sensed at (%f,%f).", object_position_.pose.position.x, object_position_.pose.position.y);
         state = 3;
       } else if (sensed_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         ROS_INFO("Detect Action server started, sending goal.");
@@ -150,7 +171,8 @@ int main (int argc, char **argv) {
         ROS_INFO("Pick Action server started, sending goal.");
         // send a goal to the action
         motion_planning_msgs::PlanPickGoal pick_goal;
-        pick_goal.object_pose = obj_ac.getResult()->pose;
+        object_position_ = obj_ac.getResult()->pose;
+        pick_goal.object_pose = object_position_;
         ROS_INFO("Object to pick is at (%f,%f).", pick_goal.object_pose.pose.position.x, pick_goal.object_pose.pose.position.y);
         pick_ac.sendGoal(pick_goal);
         state = 4;
@@ -173,13 +195,24 @@ int main (int argc, char **argv) {
         state = 5;
       } else if (pick_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         if (pick_ac.getResult()->success == -2) {
-          ROS_INFO("Out of reach. Suggested movement from Pick (%f,%f,0.0)"
-                   , pick_ac.getResult()->suggestion.x, pick_ac.getResult()->suggestion.y);
+          ROS_WARN("Out of reach.");
           // APPROACH NEARBY (OUT OF REACH) OBJECT
-          ROS_INFO("Approach Object Action server started, sending goal.");
+          ROS_INFO("Approaching Object Action, sending goal.");
           // send a goal to the action
           motion_planning_msgs::PlanApproachObjectGoal approach_goal;
-          approach_goal.position = pick_ac.getResult()->suggestion;
+
+          approach_goal.fake_aoi = grasp_simulation;
+          if (!grasp_simulation) {
+            // use a relative aoi to current position
+            geometry_msgs::Point relative_aoi = aoi_position_;
+            relative_aoi.x -= base_position.x;
+            relative_aoi.y -= base_position.y;
+            approach_goal.aoi_position = relative_aoi;
+            ROS_INFO("Base position (%f,%f)", base_position.x, base_position.y);
+            ROS_INFO("Relative AOI is (%f,%f)", relative_aoi.x, relative_aoi.y);
+          }
+          approach_goal.object_position = object_position_.pose.position;
+
           approach_ac.sendGoal(approach_goal);
           approaching_object = true;
         } else
@@ -234,4 +267,10 @@ int main (int argc, char **argv) {
 
   //exit
   return 0;
+}
+
+void currPositionCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+  // const nav_msgs::Odometryt& odom = msg;
+  const geometry_msgs::Point position = msg->pose.pose.position;
+  base_position = position;
 }
