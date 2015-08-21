@@ -64,6 +64,5 @@ class PlanPickAction {
 
 };
 geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt);
-geometry_msgs::Point computeSuggestedMovement(double min_grasp, geometry_msgs::Point pt);
 
 #endif /* PLAN_PICK_SERVER_HPP */

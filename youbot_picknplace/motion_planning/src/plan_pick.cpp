@@ -27,7 +27,6 @@ void PlanPickAction::init() {
   ac_move_.waitForServer();
   ROS_INFO("Connected to gripper and arm movement servers");
   approach_dist_ = 0.02;
-  min_grasp_dist_ = 0.3;
 }
 
 void PlanPickAction::goalCB() {
@@ -206,7 +205,6 @@ void PlanPickAction::executeCB() {
   } else {
     if (distanceObj > min_grasp_dist_) { // out of reach case
       result_.success = -2;
-      result_.suggestion = computeSuggestedMovement(min_grasp_dist_, object_pose_.pose.position);
     } else
       result_.success = -1;
 
@@ -227,22 +225,4 @@ geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt) {
   ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.141, 0.001, yaw_angle);
 
   return tf::createQuaternionMsgFromRollPitchYaw(3.141, 0.001, yaw_angle);
-}
-
-geometry_msgs::Point computeSuggestedMovement(double min_grasp, geometry_msgs::Point pt) {
-  // orientation
-  geometry_msgs::Point result;
-  double base_offset = 0.143;
-  double dist = sqrt(pow(base_offset - pt.x, 2) + pow(pt.y, 2));
-
-  double radius = dist - min_grasp + 0.02; // always move a bit more than needed
-  double tan_angle = atan2(pt.y, pt.x - base_offset);
-  ROS_INFO("Computed angle: %f", tan_angle);
-
-  result.x = radius * cos(tan_angle);
-  result.y = radius * sin(tan_angle);
-
-  ROS_INFO("Suggested movement: (%f,%f,0.0)", result.x, result.y);
-
-  return result;
 }
