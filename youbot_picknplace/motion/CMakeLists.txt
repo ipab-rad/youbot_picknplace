@@ -107,11 +107,11 @@ add_executable(gripper_motion_client
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(motion motion_msgs)
-add_dependencies(motion_pose_client motion_msgs)
-add_dependencies(motion_posture_client motion_msgs)
-add_dependencies(gripper_motion motion_msgs trajectory_msgs)
-add_dependencies(gripper_motion_client motion_msgs)
+add_dependencies(motion motion_msgs_gencpp)
+add_dependencies(motion_pose_client motion_msgs_gencpp)
+add_dependencies(motion_posture_client motion_msgs_gencpp)
+add_dependencies(gripper_motion motion_msgs_gencpp trajectory_msgs)
+add_dependencies(gripper_motion_client motion_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion

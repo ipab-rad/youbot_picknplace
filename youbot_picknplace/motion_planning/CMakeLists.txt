@@ -148,13 +148,13 @@ add_executable(plan_approach_object_client
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(motion_planning motion_msgs motion_planning_msgs navigation_msgs)
-add_dependencies(plan_detection_client motion_planning_msgs)
-add_dependencies(plan_pick_client motion_msgs motion_planning_msgs)
-add_dependencies(plan_place_client motion_planning_msgs)
-add_dependencies(plan_go_home_client motion_planning_msgs)
-add_dependencies(plan_listen_aoi_client motion_planning_msgs)
-add_dependencies(plan_approach_object_client motion_planning_msgs)
+add_dependencies(motion_planning motion_msgs_gencpp motion_planning_msgs_gencpp navigation_msgs_gencpp)
+add_dependencies(plan_detection_client motion_planning_msgs_gencpp)
+add_dependencies(plan_pick_client motion_msgs_gencpp motion_planning_msgs_gencpp)
+add_dependencies(plan_place_client motion_planning_msgs_gencpp)
+add_dependencies(plan_go_home_client motion_planning_msgs_gencpp)
+add_dependencies(plan_listen_aoi_client motion_planning_msgs_gencpp)
+add_dependencies(plan_approach_object_client motion_planning_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planning
