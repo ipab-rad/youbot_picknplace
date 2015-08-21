@@ -89,46 +89,21 @@ add_executable(motion
   src/gripper_pose.cpp
 )
 
-add_executable(motion_pose_client
-  src/move_to_pose_client.cpp
-)
-
-add_executable(motion_posture_client
-  src/move_to_posture_client.cpp
-)
-
 add_executable(gripper_motion
   src/move_gripper.cpp
-)
-
-add_executable(gripper_motion_client
-  src/move_gripper_client.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(motion motion_msgs_gencpp)
-add_dependencies(motion_pose_client motion_msgs_gencpp)
-add_dependencies(motion_posture_client motion_msgs_gencpp)
 add_dependencies(gripper_motion motion_msgs_gencpp trajectory_msgs)
-add_dependencies(gripper_motion_client motion_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(motion_pose_client
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(motion_posture_client
-  ${catkin_LIBRARIES}
-)
 target_link_libraries(gripper_motion
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(gripper_motion_client
   ${catkin_LIBRARIES}
 )
 #############
