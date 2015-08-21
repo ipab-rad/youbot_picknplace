@@ -103,7 +103,7 @@ void PlanListenAoiAction::aoiCB(const geometry_msgs::Point::ConstPtr& msg) {
 // compute desired position to move manipulating agent to given an AOI
 geometry_msgs::Point getApproachablePosition(geometry_msgs::Point aoi) {
   double magnitude = sqrt(pow(aoi.x, 2) + pow(aoi.y, 2));
-  double safety_dist = 1.5; // 1m away from AOI
+  double safety_dist = 1.0; // 1m away from AOI
   geometry_msgs::Point result;
   if (magnitude > safety_dist) {
     double direction = atan2(aoi.y, aoi.x);
