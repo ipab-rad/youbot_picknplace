@@ -48,7 +48,7 @@ git clone https://github.com/mas-group/youbot_simulation.git
     ```
     - Add object mesh from file. Using ID returned in previous command. other mesh files can be supplied by changing the path for the object file:
     ```
-    rosrun object_recognition_core mesh_add.py d399103d741b4138f935e68ba6000829 `rospack find sensing`/data/cube.stl --commit
+    rosrun object_recognition_core mesh_add.py d399103d741b4138f935e68ba6000829 `rospack find youbot_picknplace`/data/cube.stl --commit
     ```
     - Delete object using ID:
     ```
@@ -58,13 +58,13 @@ git clone https://github.com/mas-group/youbot_simulation.git
     ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
-    rosrun object_recognition_core detection -c `rospack find sensing`/conf/detection.table.ros.ork
+    rosrun object_recognition_core detection -c `rospack find youbot_picknplace`/conf/detection.table.ros.ork
     ```
     - Object detection with Rviz visualization:
     ```
     roslaunch openni2_launch openni2.launch
     rosrun rviz rviz
-    rosrun object_recognition_core detection -c  `rospack find sensing`/conf/detection.object.ros.ork
+    rosrun object_recognition_core detection -c  `rospack find youbot_picknplace`/conf/detection.object.ros.ork
     ```
 
     NOTE: more information on the usage and FAQS of the Tabletop pipeline can be found in

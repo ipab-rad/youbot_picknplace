@@ -1,0 +1,7 @@
+<launch>
+
+    <!-- start obj detection -->
+    <node pkg="object_recognition_core" type="detection" name="object_detector"
+    args="-c $(find youbot_picknplace)/conf/detection.object.ros.ork"/>
+
+</launch>
