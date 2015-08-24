@@ -86,7 +86,6 @@ add_executable(motion
   src/motion.cpp
   src/move_to_pose.cpp
   src/move_to_posture.cpp
-  src/gripper_pose.cpp
 )
 
 add_executable(gripper_motion
