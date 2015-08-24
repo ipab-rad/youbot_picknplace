@@ -108,7 +108,6 @@ void PlanPickAction::executeCB() {
       } else  if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         ROS_INFO("Gripper action failed: %s", ac_gripper_.getState().toString().c_str());
         moving_gripper = false;
-        // TODO: determine next state
       }
     } else if (init) {
       motion_attempts = 6;
@@ -154,16 +153,7 @@ void PlanPickAction::executeCB() {
 
     } else if (state == 3) {
       // moving away object
-      // geometry_msgs::PoseStamped target_pose = gripper_pose;
-      // target_pose.pose.position.z += approach_dist_;
-      // arm_goal_.pose = target_pose;
-      // arm_goal_.distance_tol = 0.02;
-      // arm_goal_.orientation_tol = 0.2;
-      // arm_goal_.planning_time = 20.0;
-      // arm_goal_.grasping_move = false;
-      // ROS_INFO("Moving away from object");
-      // ac_move_.sendGoal(arm_goal_);
-      // moving = true;
+      // unused at the moment
       state++;
     } else if (state == 4) {
 
@@ -213,8 +203,9 @@ void PlanPickAction::executeCB() {
   } else {
     if (distanceObj > min_grasp_dist_) { // out of reach case
       result_.success = -2;
-    } else
+    } else {
       result_.success = -1;
+    }
 
     ROS_INFO("%s: Failed!", action_name_.c_str());
     as_.setAborted(result_);

@@ -187,7 +187,6 @@ int main (int argc, char **argv) {
         going = false;
       }
     } else if (state == 4) {
-      // TODO fix case when out of reach
       if (pick_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
         // PLACE
         ROS_INFO("Waiting for Place server to start.");
@@ -201,6 +200,7 @@ int main (int argc, char **argv) {
         place_ac.sendGoal(place_goal);
         state = 5;
       } else if (pick_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+        //  case when out of reach
         if (pick_ac.getResult()->success == -2) {
           ROS_WARN("Out of reach.");
           // APPROACH NEARBY (OUT OF REACH) OBJECT
@@ -222,8 +222,9 @@ int main (int argc, char **argv) {
 
           approach_ac.sendGoal(approach_goal);
           approaching_object = true;
-        } else
+        } else {
           going = false;
+        }
       }
     }  else if (state == endstate) {
       if (place_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {

@@ -104,7 +104,6 @@ void MoveGripperAction::executeCB() {
       trajectory_.joint_names.push_back(joint_name1_);
       trajectory_.joint_names.push_back(joint_name2_);
 
-      // TODO: fix here position of points based on command
       trajectory_pt1_ = trajectory_msgs::JointTrajectoryPoint();
 
       if (gripper_command_ == 1) { // close

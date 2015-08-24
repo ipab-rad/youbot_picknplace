@@ -69,7 +69,6 @@ void MoveToPositionAction::executeCB() {
       going = false;
     }
 
-    // TODO
     // compute direction of movement needed
     // set nav twist msg
     setTargetTwist(target_position_.x - curr_position_.x, target_position_.y - curr_position_.y, false);
@@ -95,7 +94,6 @@ void MoveToPositionAction::executeCB() {
     // if timeout then stop
     if (timed_out_) {
       ROS_INFO("%s: Timed out", action_name_.c_str());
-      // TODO: set as preempted?
       going = false;
     }
 

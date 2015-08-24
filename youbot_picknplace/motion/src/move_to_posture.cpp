@@ -89,7 +89,6 @@ void MoveToPostureAction::executeCB() {
       timed_out_ = false;
       timer_ = nh_.createTimer(ros::Duration(15), &MoveToPostureAction::timerCB, this, true);
     } else if (state == 2) {
-      // TODO: fix next lines
       success = true;
     }
 
@@ -100,7 +99,6 @@ void MoveToPostureAction::executeCB() {
 
     if (timed_out_) {
       ROS_INFO("%s: Timed out", action_name_.c_str());
-      // TODO: set as preempted?
       going = false;
     }
 

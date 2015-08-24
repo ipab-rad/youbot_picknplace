@@ -154,10 +154,11 @@ void MoveToPoseAction::executeCB() {
       // do blocking move request
       // ATTENTION: moveit may abort but continue the motion
       if (group.execute(plan)) {
-        if (grasping_move_)
+        if (grasping_move_) {
           state++;
-        else
+        } else {
           state = endstate;
+        }
       } else {
         // set timer
         // setting an action timer
@@ -190,7 +191,6 @@ void MoveToPoseAction::executeCB() {
 
     if (timed_out_) {
       ROS_INFO("%s: Timed out", action_name_.c_str());
-      // TODO: set as preempted?
       going = false;
     }
 

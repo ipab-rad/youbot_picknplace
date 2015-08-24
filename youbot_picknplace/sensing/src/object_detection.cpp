@@ -160,8 +160,9 @@ void DetectObjectAction::timerCB(const ros::TimerEvent & event) {
 // returns true if it satisfies the similarity criteria
 // false otherwise
 bool checkSimilarity(double p1, double p2, double threshold) {
-  if (fabs(p1 - p2) < threshold)
+  if (fabs(p1 - p2) < threshold) {
     return true;
-  else
+  } else {
     return false;
+  }
 }

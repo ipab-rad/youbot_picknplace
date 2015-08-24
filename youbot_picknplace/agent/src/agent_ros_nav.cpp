@@ -154,8 +154,9 @@ size_t promptUser(  std::vector<geometry_msgs::Point> aois) {
 
     // This code converts from string to number safely.
     stringstream myStream(input);
-    if (myStream >> myNumber && myNumber < aois.size() && myNumber >= 0)
+    if (myStream >> myNumber && myNumber < aois.size() && myNumber >= 0) {
       break;
+    }
     cout << "Invalid AOI, please try again" << endl;
   }
   return myNumber;
@@ -291,10 +292,10 @@ int main (int argc, char **argv) {
   std::vector<geometry_msgs::Point> AOIs = processMap();
 
   if (AOIs.size() > 0) {
-    // TODO prompt use which AOI to choose from
+    // prompt use which AOI to choose from
     size_t aoi_index = promptUser(AOIs);
 
-    // TODO publish AOI
+    // publish AOI
     ROS_INFO("AOI %lu chosen", aoi_index);
     aoi_pub.publish(AOIs[aoi_index]);
   }

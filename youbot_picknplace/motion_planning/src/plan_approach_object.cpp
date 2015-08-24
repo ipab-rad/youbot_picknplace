@@ -35,8 +35,9 @@ void PlanApproachObjectAction::goalCB() {
   if (!fake_aoi_) {
     aoi_position_ = goal->aoi_position;
     this->executeCB();
-  } else
+  } else {
     this->executeFakeCB();
+  }
 }
 
 void PlanApproachObjectAction::preemptCB() {
