@@ -1,3 +1,10 @@
+/**
+ * @file      move_to_pose.cpp
+ * @brief     Arm motion node. Uses end-effector goal specification.
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion/move_to_pose.hpp"
 
 MoveToPoseAction::MoveToPoseAction(ros::NodeHandle nh, std::string name) :

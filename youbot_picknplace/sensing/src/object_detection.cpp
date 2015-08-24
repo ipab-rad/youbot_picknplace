@@ -1,3 +1,10 @@
+/**
+ * @file      object_detection.cpp
+ * @brief     Action to perform object detection
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "sensing/object_detection.hpp"
 
 

@@ -1,3 +1,10 @@
+/**
+ * @file      plan_place.cpp
+ * @brief     Higher-level action to plan placing an object
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion_planning/plan_place.hpp"
 
 PlanPlaceAction::PlanPlaceAction(ros::NodeHandle nh, std::string name) :

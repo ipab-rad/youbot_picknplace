@@ -1,3 +1,10 @@
+/**
+ * @file      plan_listen_aoi.cpp
+ * @brief     Higher-level action to plan listening to interest areas and then navigates to it
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion_planning/plan_listen_aoi.hpp"
 
 PlanListenAoiAction::PlanListenAoiAction(ros::NodeHandle nh, std::string name) :

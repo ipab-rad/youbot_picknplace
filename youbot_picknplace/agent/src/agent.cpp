@@ -1,3 +1,10 @@
+/**
+ * @file      agent.cpp
+ * @brief     Main manipulating agent node
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-06-20
+ */
+
 #include <ros/ros.h>
 // actionlib
 #include <actionlib/client/simple_action_client.h>

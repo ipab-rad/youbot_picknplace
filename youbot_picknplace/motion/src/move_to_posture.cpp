@@ -1,3 +1,10 @@
+/**
+ * @file      move_to_posture.cpp
+ * @brief     Arm motion action. Using pre-defined joint configurations
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion/move_to_posture.hpp"
 
 

@@ -1,3 +1,10 @@
+/**
+ * @file      plan_approach_object.cpp
+ * @brief     Higher-level action to plan approaching of object given its position and area of interest position
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion_planning/plan_approach_object.hpp"
 
 PlanApproachObjectAction::PlanApproachObjectAction(ros::NodeHandle nh, std::string name) :

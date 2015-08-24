@@ -1,3 +1,10 @@
+/**
+ * @file      move_gripper.cpp
+ * @brief     Gripper motion action
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion/move_gripper.hpp"
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>

@@ -1,3 +1,10 @@
+/**
+ * @file      plan_go_home.cpp
+ * @brief     Higher-level action to plan moving arm to home position
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion_planning/plan_go_home.hpp"
 
 PlanGoHomeAction::PlanGoHomeAction(ros::NodeHandle nh, std::string name) :

@@ -1,3 +1,11 @@
+/**
+ * @file      plan_pick.cpp
+ * @brief     Higher-level action to plan picking an object
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
+
 #include "motion_planning/plan_pick.hpp"
 #include <tf/transform_listener.h>
 

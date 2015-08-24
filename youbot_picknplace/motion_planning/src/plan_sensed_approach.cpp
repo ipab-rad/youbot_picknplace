@@ -1,3 +1,10 @@
+/**
+ * @file      plan_sensed_approach.cpp
+ * @brief     Higher-level action to plan approaching of interest area while performing object detection.
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion_planning/plan_sensed_approach.hpp"
 
 PlanSensedApproachAction::PlanSensedApproachAction(ros::NodeHandle nh, std::string name) :

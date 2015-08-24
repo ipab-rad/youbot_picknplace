@@ -1,3 +1,10 @@
+/**
+ * @file      move_to_position.cpp
+ * @brief     Action to navigate in straight path to given position
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "navigation/move_to_position.hpp"
 
 MoveToPositionAction::MoveToPositionAction(ros::NodeHandle nh, std::string name) :

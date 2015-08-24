@@ -1,3 +1,10 @@
+/**
+ * @file      plan_object_detection.cpp
+ * @brief     Higher-level action to plan object detection and executing necessary poses for it
+ * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
+ * @date      2015-08-20
+ */
+
 #include "motion_planning/plan_object_detection.hpp"
 
 PlanObjectDetectionAction::PlanObjectDetectionAction(ros::NodeHandle nh, std::string name) :
