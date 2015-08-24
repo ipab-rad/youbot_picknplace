@@ -201,7 +201,7 @@ int main (int argc, char **argv) {
         state = 5;
       } else if (pick_ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
         //  case when out of reach
-        if (pick_ac.getResult()->success == -2) {
+        if (pick_ac.getResult()->result_code == motion_planning_msgs::PlanPickResult::FAILED_OUT_OF_REACH) {
           ROS_WARN("Out of reach.");
           // APPROACH NEARBY (OUT OF REACH) OBJECT
           ROS_INFO("Approaching Object Action, sending goal.");

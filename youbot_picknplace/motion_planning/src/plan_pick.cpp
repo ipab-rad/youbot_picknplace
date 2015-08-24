@@ -197,14 +197,14 @@ void PlanPickAction::executeCB() {
   }
 
   if (success) {
-    result_.success = 1;
+    result_.result_code = motion_planning_msgs::PlanPickResult::SUCCESS;
     ROS_INFO("%s: Succeeded!", action_name_.c_str());
     as_.setSucceeded(result_);
   } else {
     if (distanceObj > min_grasp_dist_) { // out of reach case
-      result_.success = -2;
+      result_.result_code = motion_planning_msgs::PlanPickResult::FAILED_OUT_OF_REACH;
     } else {
-      result_.success = -1;
+      result_.result_code = motion_planning_msgs::PlanPickResult::FAILED;
     }
 
     ROS_INFO("%s: Failed!", action_name_.c_str());

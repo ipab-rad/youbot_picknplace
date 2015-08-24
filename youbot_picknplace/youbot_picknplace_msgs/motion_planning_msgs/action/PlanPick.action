@@ -2,7 +2,10 @@
 geometry_msgs/PoseStamped object_pose
 ---
 #result definition
-int32 success
+int32 SUCCESS = 0
+int32 FAILED = -1
+int32 FAILED_OUT_OF_REACH = -2
+int32 result_code
 geometry_msgs/Point suggestion
 ---
 #feedback
