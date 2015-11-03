@@ -105,14 +105,17 @@ void PlanPickAction::executeCB() {
         state++;
         ROS_INFO("Gripper action success");
         moving_gripper = false;
-      } else  if (ac_gripper_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-        ROS_INFO("Gripper action failed: %s", ac_gripper_.getState().toString().c_str());
+      } else  if (ac_gripper_.getState() ==
+                  actionlib::SimpleClientGoalState::ABORTED) {
+        ROS_INFO("Gripper action failed: %s",
+                 ac_gripper_.getState().toString().c_str());
         moving_gripper = false;
       }
     } else if (init) {
       motion_attempts = 6;
       gripper_pose = object_pose_;
-      gripper_pose.pose.orientation = computeGripperGraspPose(object_pose_.pose.position);
+      gripper_pose.pose.orientation = computeGripperGraspPose(
+                                        object_pose_.pose.position);
 
       distanceObj = sqrt(pow(0.143 - object_pose_.pose.position.x, 2) +
                          pow(object_pose_.pose.position.y, 2));
@@ -121,7 +124,8 @@ void PlanPickAction::executeCB() {
       // Safety guard for never attempting to reach below the ground
       double ground_limit = 0.095; // 9,5cm
       if (gripper_pose.pose.position.z < ground_limit) {
-        ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f", ground_limit, gripper_pose.pose.position.z);
+        ROS_INFO("Attempting to reach below ground limit %f with z-coord: %f",
+                 ground_limit, gripper_pose.pose.position.z);
         ROS_INFO("Assuming z='ground limit' for safety");
         gripper_pose.pose.position.z = ground_limit;
       }
@@ -221,7 +225,8 @@ geometry_msgs::Quaternion computeGripperGraspPose(geometry_msgs::Point pt) {
   double offset = 0.25;
   double yaw_angle = tan_angle + offset;
 
-  ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.141, 0.001, yaw_angle);
+  ROS_INFO("Desired Gripper RPY orientation: (%f,%f,%f)", 3.141, 0.001,
+           yaw_angle);
 
   return tf::createQuaternionMsgFromRollPitchYaw(3.141, 0.001, yaw_angle);
 }

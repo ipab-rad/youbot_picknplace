@@ -1,5 +1,5 @@
 /**
- * @file      motion.cpp
+ * @file      motion_planning.cpp
  * @brief     Main motion planning node
  * @author    Alexandre Silva <s1464657@sms.ed.ac.uk>
  * @date      2015-06-20
