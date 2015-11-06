@@ -16,9 +16,10 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
-#include <motion_planning_msgs/PlanObjectDetectionAction.h>
-#include <motion_planning_msgs/PlanPlaceAction.h>
+#include <motion_msgs/MoveToPostureAction.h>
+#include <motion_msgs/MoveGripperAction.h>
 #include <motion_planning_msgs/PlanPickAction.h>
+#include <sensing_msgs/DetectObjectAction.h>
 
 class HLPlanner {
  public:
@@ -30,19 +31,26 @@ class HLPlanner {
   void loadParams();
 
   void execute();
+  bool isFinished() {return finished_;}
+  static void interrupt(int s);
+  static bool isInterrupted() {return interrupted_;}
+
+ private:
+
   void pick_a();
   void pick_b();
   void goto_a();
   void goto_b();
   void place_a();
   void place_b();
+  void drop_a();
+  void drop_b();
 
-  static void interrupt(int s);
-  static bool isInterrupted() {return interrupted_;}
+  void initRobot();
+  void endRobot();
 
- private:
   // Flags
-  bool executing_;
+  bool finished_;
   bool failed_;
   static bool interrupted_;
 
@@ -56,6 +64,10 @@ class HLPlanner {
   std::string plan_path_;
   std::string plan_file_;
 
+  ros::Duration wait_init_;
+  ros::Duration wait_;
+  ros::Duration wait_detect_;
+
   // Variables
   std::string robot_state_; // A or B
   std::string cube_a_state_; // A, B or R
@@ -67,12 +79,19 @@ class HLPlanner {
 
   // ROS
   ros::NodeHandle* nh_;
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanObjectDetectionAction>
-  obj_ac_;
+  actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> posture_ac_;
+  actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> gripper_ac_;
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac_;
-  actionlib::SimpleActionClient<motion_planning_msgs::PlanPlaceAction> place_ac_;
-  motion_planning_msgs::PlanPlaceGoal place_goal_;
-  motion_planning_msgs::PlanPickGoal pick_goal_;
+  actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> detect_ac_;
+  motion_msgs::MoveGripperGoal close_;
+  motion_msgs::MoveGripperGoal open_;
+  motion_msgs::MoveToPostureGoal candle_;
+  motion_msgs::MoveToPostureGoal place_;
+  motion_msgs::MoveToPostureGoal drop_a_;
+  motion_msgs::MoveToPostureGoal drop_b_;
+  motion_msgs::MoveToPostureGoal home_;
+  motion_planning_msgs::PlanPickGoal pick_;
+  sensing_msgs::DetectObjectGoal detect_;
 };
 
 #endif /* HL_PLANNER_HPP */

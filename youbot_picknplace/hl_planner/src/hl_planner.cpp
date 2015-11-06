@@ -9,9 +9,10 @@
 #include "hl_planner/hl_planner.hpp"
 
 HLPlanner::HLPlanner(ros::NodeHandle* nh) :
-  obj_ac_("/youbot_3/sensing/plan_detection", true),
+  posture_ac_("/youbot_3/motion/move_to_posture", true),
+  gripper_ac_("/youbot_3/gripper_motion/move_gripper", true),
   pick_ac_("/youbot_3/motion_planning/plan_pick", true),
-  place_ac_("/youbot_3/motion_planning/plan_place", true) {
+  detect_ac_("/youbot_3/sensing/object_detection", true) {
   nh_ = nh;
   this->loadParams();
   this->init();
@@ -23,7 +24,7 @@ HLPlanner::~HLPlanner() {
 }
 
 void HLPlanner::init() {
-  executing_ = false;
+  finished_ = false;
   failed_ = false;
   // Setting up actions
   PICK_A = "PICK_A";
@@ -43,11 +44,29 @@ void HLPlanner::init() {
 }
 
 void HLPlanner::rosSetup() {
-  ROS_INFO("Waiting for Place server to start.");
-  place_ac_.waitForServer();
-  place_goal_.place_object = true;
+  ROS_INFO("Waiting for Move To Posture server to start.");
+  posture_ac_.waitForServer();
+  ROS_INFO("Waiting for Gripper server to start.");
+  gripper_ac_.waitForServer();
   ROS_INFO("Waiting for Pick server to start.");
   pick_ac_.waitForServer();
+  ROS_INFO("Waiting for Detect Object server to start.");
+  detect_ac_.waitForServer();
+
+  wait_init_ = ros::Duration(30.0);
+  wait_ = ros::Duration(10.0);
+  wait_detect_ = ros::Duration(5.0);
+
+  close_.command = 0; // Close gripper
+  open_.command = 1; // Open gripper
+
+  candle_.posture = "candle";
+  place_.posture = "place_front";
+  drop_a_.posture = "back_drop_left";
+  drop_b_.posture = "back_drop_right";
+  home_.posture = "home";
+  detect_.detect = true;
+  detect_.timeout = 5;
 }
 
 void HLPlanner::loadParams() {
@@ -59,70 +78,119 @@ void HLPlanner::loadParams() {
 }
 
 void HLPlanner::execute() {
-  if (!executing_) {
-    for (size_t i = 0; i < action_list_.size(); ++i) {
-      if (action_list_[i].compare(PICK_A) == 0) {
-        ROS_INFO("Picking A!");
-      } else if (action_list_[i].compare(PICK_B) == 0) {
-        ROS_INFO("Picking B!");
-      } else if (action_list_[i].compare(GOTO_A) == 0) {
-        ROS_INFO("Goto A!");
-      } else if (action_list_[i].compare(GOTO_B) == 0) {
-        ROS_INFO("Goto B!");
-      } else if (action_list_[i].compare(PLACE_A) == 0) {
-        ROS_INFO("Place A!");
-      } else if (action_list_[i].compare(PLACE_B) == 0) {
-        ROS_INFO("Place B!");
-      } else {
-        ROS_ERROR("Action not recognised!");
-      }
+  ROS_INFO("Preparing robot");
+  this->initRobot();
+  ROS_INFO("Robot setup complete");
+  for (size_t i = 0; i < action_list_.size(); ++i) {
+    if (action_list_[i].compare(PICK_A) == 0) {
+      ROS_INFO("Pick A!");
+      this->pick_a();
+    } else if (action_list_[i].compare(PICK_B) == 0) {
+      ROS_INFO("Pick B!");
+      this->pick_b();
+    } else if (action_list_[i].compare(GOTO_A) == 0) {
+      ROS_INFO("Goto A!");
+      this->goto_a();
+    } else if (action_list_[i].compare(GOTO_B) == 0) {
+      ROS_INFO("Goto B!");
+      this->goto_b();
+    } else if (action_list_[i].compare(PLACE_A) == 0) {
+      ROS_INFO("Place A!");
+      this->place_a();
+    } else if (action_list_[i].compare(PLACE_B) == 0) {
+      ROS_INFO("Place B!");
+      this->place_b();
+    } else {
+      ROS_ERROR("Action not recognised!");
+    }
+    if (failed_) {
+      ROS_WARN("Experiment failed!");
+      break;
     }
   }
-  executing_ = true;
+  ROS_INFO("Finished!");
+  this->endRobot();
+  finished_ = true;
 }
 
 void HLPlanner::pick_a() {
-  pick_goal_.object_pose = cube_a_pose_;
-  pick_ac_.sendGoal(pick_goal_);
+  // Move to Cube A location
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  detect_ac_.sendGoalAndWait(detect_, wait_detect_, wait_detect_);
+  pick_.object_pose = detect_ac_.getResult()->pose;
+  pick_ac_.sendGoalAndWait(pick_);
   if (pick_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    executing_ = false;
+    this->drop_a();
   } else {failed_ = true;}
 }
 
 void HLPlanner::pick_b() {
-  pick_goal_.object_pose = cube_b_pose_;
-  pick_ac_.sendGoal(pick_goal_);
+  // Move to Cube B location
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  detect_ac_.sendGoalAndWait(detect_, wait_detect_, wait_detect_);
+  pick_.object_pose = detect_ac_.getResult()->pose;
+  pick_ac_.sendGoalAndWait(pick_);
   if (pick_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    executing_ = false;
+    this->drop_b();
   } else {failed_ = true;}
 }
 
 void HLPlanner::goto_a() {
   if (robot_state_.compare("A") == 0) {
     ROS_WARN("Already at A!");
-    executing_ = false;
   } else {
     // NAVIGATION ACTION
-    // SENSING ACTION
   }
 }
 
 void HLPlanner::goto_b() {
   if (robot_state_.compare("B") == 0) {
     ROS_WARN("Already at B!");
-    executing_ = false;
   } else {
     // NAVIGATION ACTION
-    // SENSING ACTION
   }
 }
 
 void HLPlanner::place_a() {
-  place_ac_.sendGoal(place_goal_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(drop_a_, wait_, wait_);
+  gripper_ac_.sendGoalAndWait(close_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(place_, wait_, wait_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
 }
 
 void HLPlanner::place_b() {
-  place_ac_.sendGoal(place_goal_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(drop_b_, wait_, wait_);
+  gripper_ac_.sendGoalAndWait(close_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(place_, wait_, wait_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+}
+
+void HLPlanner::drop_a() {
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(drop_a_, wait_, wait_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+}
+
+void HLPlanner::drop_b() {
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(drop_b_, wait_, wait_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+}
+
+void HLPlanner::initRobot() {
+  posture_ac_.sendGoalAndWait(candle_, wait_init_, wait_init_);
+  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+}
+
+void HLPlanner::endRobot() {
+  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+  posture_ac_.sendGoalAndWait(home_, wait_, wait_);
 }
 
 bool HLPlanner::interrupted_ = false;
@@ -130,19 +198,18 @@ bool HLPlanner::interrupted_ = false;
 void HLPlanner::interrupt(int s) {
   HLPlanner::interrupted_ = true;
   ROS_INFO("HLPlanner Interrupted!");
+  ros::shutdown();
 }
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "hl_planner");
   ros::NodeHandle nh("hl_planner");
   HLPlanner hl_planner(&nh);
-  ROS_INFO("High-Level Planner initialised");
-
   std::signal(SIGINT, HLPlanner::interrupt);
-
+  ROS_INFO("High-Level Planner initialised");
   ros::Rate r(10);
 
-  while (ros::ok() && !HLPlanner::isInterrupted()) {
+  while (ros::ok() && !HLPlanner::isInterrupted() && !hl_planner.isFinished()) {
     ros::spinOnce();
     hl_planner.execute();
     r.sleep();

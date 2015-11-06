@@ -68,7 +68,7 @@ void PlanPickAction::executeCB() {
 
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
-  int pick_attempts = 1;
+  int pick_attempts = 3;
   // motion attempts
   int motion_attempts = -1;
 
