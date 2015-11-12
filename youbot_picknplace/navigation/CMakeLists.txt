@@ -7,7 +7,7 @@ project(navigation)
 find_package(catkin REQUIRED COMPONENTS
  actionlib
  roscpp
- navigation_msgs
+ move_base_msgs
  nav_msgs
  cmake_modules
  )

@@ -58,7 +58,8 @@ void DetectObjectAction::executeCB() {
   ROS_INFO("Executing goal for %s", action_name_.c_str());
 
   timed_out_ = false;
-  timer_ = nh_.createTimer(ros::Duration(detection_time_), &DetectObjectAction::timerCB, this, true);
+  timer_ = nh_.createTimer(ros::Duration(detection_time_),
+                           &DetectObjectAction::timerCB, this, true);
 
 
   while (going) {
@@ -86,9 +87,15 @@ void DetectObjectAction::executeCB() {
     try {
       object_pose_.header.stamp = ros::Time(0);
       geometry_msgs::PoseStamped pout;
-      listener_.waitForTransform(youbot_ + "/base_footprint", object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
-      listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
-      ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)", pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
+      try {
+        listener_.waitForTransform(youbot_ + "/base_footprint",
+                                   object_pose_.header.frame_id.c_str(), ros::Time(0), ros::Duration(13.0) );
+        listener_.transformPose(youbot_ + "/base_footprint", object_pose_, pout);
+      } catch (tf::TransformException e) {
+        ROS_WARN("Object_detection node: %s", e.what());
+      }
+      ROS_INFO("Object position wrt to frame /base_footprint, Point (x,y,z): (%f,%f,%f)",
+               pout.pose.position.x, pout.pose.position.y, pout.pose.position.z);
       result_.pose = pout;
 
     } catch (tf::TransformException ex) {
@@ -109,7 +116,8 @@ void DetectObjectAction::executeCB() {
 
 }
 
-void DetectObjectAction::detectedCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {
+void DetectObjectAction::detectedCB(const
+                                    object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg) {
   int object_count = msg->objects.size();
   ROS_INFO("%d objects detected", object_count);
 
@@ -145,7 +153,8 @@ bool DetectObjectAction::validateObject(geometry_msgs::Point point) {
     return false;
   }
   validation_count_++;
-  ROS_INFO("Similar object position has been received. Validation count at: %d", validation_count_);
+  ROS_INFO("Similar object position has been received. Validation count at: %d",
+           validation_count_);
 
   if (validation_count_ == required_validations_)
     return true;
@@ -153,7 +162,7 @@ bool DetectObjectAction::validateObject(geometry_msgs::Point point) {
     return false;
 }
 
-void DetectObjectAction::timerCB(const ros::TimerEvent & event) {
+void DetectObjectAction::timerCB(const ros::TimerEvent& event) {
   timed_out_ = true;
 }
 

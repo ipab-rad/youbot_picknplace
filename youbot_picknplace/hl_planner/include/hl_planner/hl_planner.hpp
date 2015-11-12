@@ -11,7 +11,12 @@
 
 #include <ros/ros.h>
 #include <csignal>
+#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -20,6 +25,10 @@
 #include <motion_msgs/MoveGripperAction.h>
 #include <motion_planning_msgs/PlanPickAction.h>
 #include <sensing_msgs/DetectObjectAction.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <object_recognition_msgs/RecognizedObjectArray.h>
+
+#include <geometry_msgs/Twist.h>
 
 class HLPlanner {
  public:
@@ -37,22 +46,38 @@ class HLPlanner {
 
  private:
 
-  void pick_a();
-  void pick_b();
-  void goto_a();
-  void goto_b();
-  void place_a();
-  void place_b();
-  void drop_a();
-  void drop_b();
+  void initLogs();
+  void createStateFile();
+  void updateLog(std::string action);
+  void closeLog();
 
+  void pickA();
+  void pickB();
+  void gotoA();
+  void gotoB();
+  void gotoA_A();
+  void gotoA_B();
+  void gotoB_A();
+  void gotoB_B();
+  void placeA();
+  void placeB();
+  void dropA();
+  void dropB();
+
+  void startDetection();
+  void stopDetection();
+  void stopRobot();
   void initRobot();
   void endRobot();
+
+  void emptyCB(const object_recognition_msgs::RecognizedObjectArray::ConstPtr&
+               msg) {;}
 
   // Flags
   bool finished_;
   bool failed_;
   static bool interrupted_;
+  bool enable_alignment_;
 
   // Constants
   std::string PICK_A;
@@ -63,26 +88,37 @@ class HLPlanner {
   std::string PLACE_B;
   std::string plan_path_;
   std::string plan_file_;
+  std::string exp_name_;
+
+  geometry_msgs::Twist stop_msg_;
 
   ros::Duration wait_init_;
   ros::Duration wait_;
   ros::Duration wait_detect_;
+
+  std::ofstream state_file_;
+  std::ofstream log_file_;
 
   // Variables
   std::string robot_state_; // A or B
   std::string cube_a_state_; // A, B or R
   std::string cube_b_state_; // A, B or R
   std::vector<std::string> action_list_;
+  std::string s_pid;
+  char pid [8];
 
   geometry_msgs::PoseStamped cube_a_pose_;
   geometry_msgs::PoseStamped cube_b_pose_;
 
   // ROS
   ros::NodeHandle* nh_;
+  ros::Subscriber det_sub_;
+  ros::Publisher cmd_vel_pub_;
   actionlib::SimpleActionClient<motion_msgs::MoveToPostureAction> posture_ac_;
   actionlib::SimpleActionClient<motion_msgs::MoveGripperAction> gripper_ac_;
   actionlib::SimpleActionClient<motion_planning_msgs::PlanPickAction> pick_ac_;
   actionlib::SimpleActionClient<sensing_msgs::DetectObjectAction> detect_ac_;
+  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_ac_;
   motion_msgs::MoveGripperGoal close_;
   motion_msgs::MoveGripperGoal open_;
   motion_msgs::MoveToPostureGoal candle_;
@@ -92,6 +128,12 @@ class HLPlanner {
   motion_msgs::MoveToPostureGoal home_;
   motion_planning_msgs::PlanPickGoal pick_;
   sensing_msgs::DetectObjectGoal detect_;
+  move_base_msgs::MoveBaseGoal move_a_;
+  move_base_msgs::MoveBaseGoal move_b_;
+  move_base_msgs::MoveBaseGoal move_a_cube_a_;
+  move_base_msgs::MoveBaseGoal move_a_cube_b_;
+  move_base_msgs::MoveBaseGoal move_b_cube_a_;
+  move_base_msgs::MoveBaseGoal move_b_cube_b_;
 };
 
 #endif /* HL_PLANNER_HPP */

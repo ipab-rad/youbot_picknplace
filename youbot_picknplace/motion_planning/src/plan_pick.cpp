@@ -169,14 +169,14 @@ void PlanPickAction::executeCB() {
         posture_goal_.posture = "check_right";
 
       if (object_pose_.pose.position.x > 0.3)
-        posture_goal_.posture = "check_front";
+        posture_goal_.posture = "candle";
 
       ROS_INFO("Checking for object with posture %s", posture_goal_.posture.c_str());
       ac_move_posture_.sendGoal(posture_goal_);
       // start detection action
       sensing_msgs::DetectObjectGoal detect_goal;
       detect_goal.detect = true;
-      detect_goal.timeout = 10;
+      detect_goal.timeout = 20;
       detect_ac_.sendGoal(detect_goal);
       state = endstate;
 

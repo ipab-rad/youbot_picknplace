@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   navigation_msgs
   sensing_msgs
   move_base_msgs
+  object_recognition_msgs
   geometry_msgs)
 
 ## System dependencies are found with CMake's conventions

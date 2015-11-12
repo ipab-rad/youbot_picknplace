@@ -1,3 +1,4 @@
 plan_path: /home/ubuntu12/Git/youbot-ws/src/youbot_picknplace/youbot_picknplace/hl_planner/cfg/
 plan_file: action_plan.cfg
-robot_name_: youbot_3
+# robot_name: youbot_3
+exp_name: exp_2
