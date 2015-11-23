@@ -17,6 +17,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -88,6 +91,7 @@ class HLPlanner {
   std::string PLACE_B;
   std::string plan_path_;
   std::string plan_file_;
+  std::string log_path_;
   std::string exp_name_;
 
   geometry_msgs::Twist stop_msg_;

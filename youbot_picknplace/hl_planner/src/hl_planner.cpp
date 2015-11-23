@@ -121,6 +121,7 @@ void HLPlanner::rosSetup() {
 void HLPlanner::loadParams() {
   ros::param::get("/hl_planner/plan_path", plan_path_);
   ros::param::get("/hl_planner/plan_file", plan_file_);
+  ros::param::get("/hl_planner/log_path", log_path_);
   ros::param::get("/hl_planner/exp_name", exp_name_);
   ros::param::get("/hl_planner/robot_state", robot_state_);
   ros::param::get("/hl_planner/cube_a_state", cube_a_state_);
@@ -132,8 +133,8 @@ void HLPlanner::loadParams() {
 
 void HLPlanner::execute() {
   ROS_INFO("Preparing robot");
-  this->initRobot();
   this->initLogs();
+  this->initRobot();
   ROS_INFO("Robot setup complete");
   for (size_t i = 0; i < action_list_.size(); ++i) {
     if (action_list_[i].compare(PICK_A) == 0) {
@@ -170,18 +171,22 @@ void HLPlanner::execute() {
 }
 
 void HLPlanner::initLogs() {
+  struct stat st = {0};
+
+  if (stat((log_path_ + exp_name_).c_str(), &st) == -1) {
+    int err = mkdir((log_path_ + exp_name_).c_str(), 0700);
+    if (err == -1) {ROS_ERROR("COULD NOT CREATE LOG FOLDER!");}
+  }
   this->createStateFile();
   std::stringstream ss;
-  ss << "/home/ubuntu12/Git/youbot-ws/logs/hl_planning/experiments/" +
-     exp_name_ + "/log.dat";
+  ss << log_path_ + exp_name_ + "/log.dat";
   std::string file = ss.str();
   log_file_.open(file.c_str());
 }
 
 void HLPlanner::createStateFile() {
   std::stringstream ss;
-  ss << "/home/ubuntu12/Git/youbot-ws/logs/hl_planning/experiments/"
-     + exp_name_ + "/exp.state";
+  ss << log_path_ + exp_name_ + "/exp.state";
   std::string file = ss.str();
   state_file_.open(file.c_str());
   state_file_ << "(AND (RobotAt Loc" + robot_state_ + ") ";
