@@ -58,10 +58,6 @@ class HLPlanner {
   void pickB();
   void gotoA();
   void gotoB();
-  void gotoA_A();
-  void gotoA_B();
-  void gotoB_A();
-  void gotoB_B();
   void placeA();
   void placeB();
   void dropA();
@@ -69,6 +65,8 @@ class HLPlanner {
 
   void startDetection();
   void stopDetection();
+  void moveLeft();
+  void moveRight();
   void stopRobot();
   void initRobot();
   void endRobot();
@@ -94,7 +92,12 @@ class HLPlanner {
   std::string log_path_;
   std::string exp_name_;
 
+  int freq_;
+  float velocity_;
+  float move_time_;
   geometry_msgs::Twist stop_msg_;
+  geometry_msgs::Twist move_left_;
+  geometry_msgs::Twist move_right_;
 
   ros::Duration wait_init_;
   ros::Duration wait_;

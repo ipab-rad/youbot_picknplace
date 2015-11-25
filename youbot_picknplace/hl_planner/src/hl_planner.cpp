@@ -36,7 +36,7 @@ void HLPlanner::init() {
   PLACE_A = "PLACE_A";
   PLACE_B = "PLACE_B";
 
-  enable_alignment_ = false;
+  enable_alignment_ = true;
 
   // Read action list
   std::ifstream file((plan_path_ + plan_file_).c_str());
@@ -69,6 +69,15 @@ void HLPlanner::rosSetup() {
   stop_msg_.angular.x = 0.0;
   stop_msg_.angular.y = 0.0;
   stop_msg_.angular.z = 0.0;
+
+  freq_ = 10;
+  velocity_ = 0.2;
+  move_time_ = 3.0;
+  move_left_ = stop_msg_;
+  move_left_.linear.y = velocity_;
+
+  move_right_ = stop_msg_;
+  move_right_.linear.y = -velocity_;
 
   wait_init_ = ros::Duration(30.0);
   wait_ = ros::Duration(10.0);
@@ -207,49 +216,47 @@ void HLPlanner::closeLog() {
 }
 
 void HLPlanner::pickA() {
-  // TODO: Modify procedure of moving left/right for cube alignment
-  // Method: Rate 10Hz, for 10 spinOnce publish 0.3 sideways (1 second 30cm/s)
-  // Move to Cube A location
-  if (enable_alignment_) {
-    if (robot_state_.compare("A") == 0) {
-      void gotoA_A();
-    } else if (robot_state_.compare("B") == 0) {
-      void gotoB_A();
-    } else {ROS_ERROR("Robot State does not exist!");}
+  if (robot_state_.compare(cube_a_state_) != 0) {
+    ROS_WARN_STREAM("Cube A not in " << robot_state_ << "!");
+    failed_ = true;
+  } else {
+    // Move to Cube A location
+    if (enable_alignment_) {this->moveLeft();}
+    // Pickup Cube A
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    this->startDetection();
+    detect_ac_.sendGoalAndWait(detect_, wait_detect_, wait_detect_);
+    pick_.object_pose = detect_ac_.getResult()->pose;
+    pick_ac_.sendGoalAndWait(pick_);
+    this->stopDetection();
+    if (pick_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      this->dropA();
+      cube_a_state_ = "R";
+    } else {failed_ = true;}
+    if (enable_alignment_) {this->moveRight();}
   }
-  // Pickup Cube A
-  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
-  this->startDetection();
-  detect_ac_.sendGoalAndWait(detect_, wait_detect_, wait_detect_);
-  pick_.object_pose = detect_ac_.getResult()->pose;
-  pick_ac_.sendGoalAndWait(pick_);
-  this->stopDetection();
-  if (pick_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    this->dropA();
-    cube_a_state_ = "R";
-  } else {failed_ = true;}
 }
 
 void HLPlanner::pickB() {
-  // Move to Cube B location
-  if (enable_alignment_) {
-    if (robot_state_.compare("A") == 0) {
-      void gotoA_B();
-    } else if (robot_state_.compare("B") == 0) {
-      void gotoB_B();
-    } else {ROS_ERROR("Robot State does not exist!");}
+  if (robot_state_.compare(cube_b_state_) != 0) {
+    ROS_WARN_STREAM("Cube B not in " << robot_state_ << "!");
+    failed_ = true;
+  } else {
+    // Move to Cube B
+    if (enable_alignment_) {this->moveRight();}
+    // Pickup Cube B
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    this->startDetection();
+    detect_ac_.sendGoalAndWait(detect_, wait_detect_, wait_detect_);
+    pick_.object_pose = detect_ac_.getResult()->pose;
+    pick_ac_.sendGoalAndWait(pick_);
+    this->stopDetection();
+    if (pick_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+      this->dropB();
+      cube_b_state_ = "R";
+    } else {failed_ = true;}
+    if (enable_alignment_) {this->moveLeft();}
   }
-  // Pickup Cube B
-  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
-  this->startDetection();
-  detect_ac_.sendGoalAndWait(detect_, wait_detect_, wait_detect_);
-  pick_.object_pose = detect_ac_.getResult()->pose;
-  pick_ac_.sendGoalAndWait(pick_);
-  this->stopDetection();
-  if (pick_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    this->dropB();
-    cube_b_state_ = "R";
-  } else {failed_ = true;}
 }
 
 void HLPlanner::gotoA() {
@@ -284,72 +291,44 @@ void HLPlanner::gotoB() {
   }
 }
 
-void HLPlanner::gotoA_A() {
-  move_ac_.sendGoalAndWait(move_a_cube_a_);
-  if (move_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    ROS_INFO("ROS_NAV:Arrived!");
-  } else if (move_ac_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-    ROS_WARN("ROS_NAV:Aborted!");
-    failed_ = true;
-  }
-  this->stopRobot();
-}
-
-void HLPlanner::gotoA_B() {
-  move_ac_.sendGoalAndWait(move_a_cube_b_);
-  if (move_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    ROS_INFO("ROS_NAV:Arrived!");
-  } else if (move_ac_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-    ROS_WARN("ROS_NAV:Aborted!");
-    failed_ = true;
-  }
-  this->stopRobot();
-}
-
-void HLPlanner::gotoB_A() {
-  move_ac_.sendGoalAndWait(move_b_cube_a_);
-  if (move_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    ROS_INFO("ROS_NAV:Arrived!");
-  } else if (move_ac_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-    ROS_WARN("ROS_NAV:Aborted!");
-    failed_ = true;
-  }
-  this->stopRobot();
-}
-
-void HLPlanner::gotoB_B() {
-  move_ac_.sendGoalAndWait(move_b_cube_b_);
-  if (move_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-    ROS_INFO("ROS_NAV:Arrived!");
-  } else if (move_ac_.getState() == actionlib::SimpleClientGoalState::ABORTED) {
-    ROS_WARN("ROS_NAV:Aborted!");
-    failed_ = true;
-  }
-  this->stopRobot();
-}
-
 void HLPlanner::placeA() {
-  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(drop_a_, wait_, wait_);
-  gripper_ac_.sendGoalAndWait(close_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(place_, wait_, wait_);
-  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
-  // TODO: Check that placing was successful!
-  cube_a_state_ = robot_state_;
+  if (cube_a_state_.compare("R") != 0) {
+    ROS_WARN("Cube A not on robot!");
+    failed_ = true;
+  } else {
+    if (enable_alignment_) {this->moveLeft();}
+    gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(drop_a_, wait_, wait_);
+    gripper_ac_.sendGoalAndWait(close_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(place_, wait_, wait_);
+    gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+    // TODO: Check that placing was successful!
+    cube_a_state_ = robot_state_;
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    if (enable_alignment_) {this->moveRight();}
+  }
 }
 
 void HLPlanner::placeB() {
-  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(drop_b_, wait_, wait_);
-  gripper_ac_.sendGoalAndWait(close_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
-  posture_ac_.sendGoalAndWait(place_, wait_, wait_);
-  gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
-  // TODO: Check that placing was successful!
-  cube_b_state_ = robot_state_;
+  if (cube_b_state_.compare("R") != 0) {
+    ROS_WARN("Cube B not on robot!");
+    failed_ = true;
+  } else {
+    if (enable_alignment_) {this->moveRight();}
+    gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(drop_b_, wait_, wait_);
+    gripper_ac_.sendGoalAndWait(close_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    posture_ac_.sendGoalAndWait(place_, wait_, wait_);
+    gripper_ac_.sendGoalAndWait(open_, wait_, wait_);
+    // TODO: Check that placing was successful!
+    cube_b_state_ = robot_state_;
+    posture_ac_.sendGoalAndWait(candle_, wait_, wait_);
+    if (enable_alignment_) {this->moveLeft();}
+  }
 }
 
 void HLPlanner::dropA() {
@@ -388,6 +367,28 @@ void HLPlanner::stopDetection() {
     r.sleep();
   }
   ROS_INFO("Detection stopped");
+}
+
+void HLPlanner::moveLeft() {
+  ros::Rate r(freq_);
+  for (int i = 0; i < (freq_ * move_time_); ++i) {
+    cmd_vel_pub_.publish(move_left_);
+    ros::spinOnce();
+    r.sleep();
+  }
+  cmd_vel_pub_.publish(stop_msg_);
+  ros::spinOnce();
+}
+
+void HLPlanner::moveRight() {
+  ros::Rate r(freq_);
+  for (int i = 0; i < (freq_ * move_time_); ++i) {
+    cmd_vel_pub_.publish(move_right_);
+    ros::spinOnce();
+    r.sleep();
+  }
+  cmd_vel_pub_.publish(stop_msg_);
+  ros::spinOnce();
 }
 
 void HLPlanner::stopRobot() {
